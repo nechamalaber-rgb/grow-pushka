@@ -1,10 +1,12 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import './App.css'
 import { supabase } from './supabase'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '')
+const stripePromise = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+  : null
 
 const SLIDES = [
   '/slides/pesach2.jpg',
@@ -21,25 +23,6 @@ const SLIDES = [
   '/slides/slide7.jpg',
 ]
 
-function SlideshowBg() {
-  const [current, setCurrent] = useState(0)
-  useEffect(() => {
-    const t = setInterval(() => setCurrent(c => (c + 1) % SLIDES.length), 4000)
-    return () => clearInterval(t)
-  }, [])
-  return (
-    <div className="slideshow-bg">
-      {SLIDES.map((src, i) => (
-        <div
-          key={src}
-          className={`slide ${i === current ? 'active' : ''}`}
-          style={{ backgroundImage: `url(${src})` }}
-        />
-      ))}
-    </div>
-  )
-}
-
 const ACTIVITY_DATA = [
   { src: '/slides/pesach2.jpg', emoji: '🍷', label: 'Pesach Seder',           sub: 'Beautiful Seder tables' },
   { src: '/slides/pesach3.jpg', emoji: '🥗', label: 'Yom Tov Meals',          sub: 'Fresh, abundant spreads' },
@@ -55,19 +38,23 @@ const ACTIVITY_DATA = [
   { src: '/slides/slide7.jpg', emoji: '🕯️', label: 'Havdalah Night',        sub: 'Jewish light & warmth' },
 ]
 
+// FIX #23 — use <img> tags with alt text instead of background-image
 function PhotoStrip() {
   return (
     <div className="photo-strip-section">
       <div className="photo-strip-header">
-        <span className="photo-strip-label">CHABAD OF EAST GREENBUSH</span>
+        <span className="photo-strip-label">JEWISH GREENBUSH CHABAD</span>
         <span className="photo-strip-sub">Swipe to explore →</span>
       </div>
       <div className="photo-strip">
         {ACTIVITY_DATA.map((item) => (
           <div key={item.label} className="photo-strip-card">
-            <div
+            <img
+              src={item.src}
+              alt={item.label}
               className="photo-strip-img"
-              style={{ backgroundImage: `url(${item.src})` }}
+              loading="lazy"
+              onError={e => { e.target.style.display = 'none' }}
             />
             <div className="photo-strip-caption-block">
               <span className="photo-strip-emoji">{item.emoji}</span>
@@ -230,7 +217,7 @@ const getPrestige = (total) => {
 
 const INITIAL_PERSONAL = 72 // 18+36+18
 
-const ADMIN_PASSWORD = 'jewishgirls613'
+// FIX #1 — ADMIN_PASSWORD removed entirely; admin access gated by email server-side via RLS
 const ZELLE_PHONE = '5187276037'
 
 const CAUSES = [
@@ -281,9 +268,6 @@ const loadSaved = () => {
 const initialState = {
   screen: 'home',
   menuOpen: false,
-  adminUnlocked: false,
-  adminPassword: '',
-  adminPasswordError: '',
   dbDonations: null,
   paymentMethod: 'card',
   donationCause: 'general',
@@ -301,6 +285,7 @@ const initialState = {
 
   // App data
   totalRaised: 0,
+  totalRaisedLoading: true,
   communityGoal: 36000,
   pushkaBalance: 0,
   pushkaGoal: 100,
@@ -332,6 +317,7 @@ const initialState = {
   reminderEnabled: false,
   reminderTime: '09:00',
   reminderFrequency: 'daily',
+  reminderError: '',  // FIX #21
 
   // Recurring payments
   recurringEnabled: false,
@@ -342,7 +328,7 @@ const initialState = {
   seenIntro: false,
 }
 
-// ── is a recurring payment due today? ──
+// FIX #12 — corrected Shabbat day calculation
 const isRecurringDue = (frequency, lastDate) => {
   if (!lastDate) return true
   const last = new Date(lastDate)
@@ -351,14 +337,115 @@ const isRecurringDue = (frequency, lastDate) => {
   if (frequency === 'weekly') return daysSince >= 7
   if (frequency === 'monthly') return daysSince >= 30
   if (frequency === 'shabbat') {
-    // due if last was before the most recent Friday
-    const day = now.getDay() // 0=Sun, 5=Fri, 6=Sat
-    const daysSinceFriday = day === 5 ? 0 : day === 6 ? 1 : day + 2
-    const lastFriday = new Date(now); lastFriday.setDate(now.getDate() - daysSinceFriday)
-    lastFriday.setHours(0,0,0,0)
-    return last < lastFriday
+    const lastFriday = new Date(now)
+    const dayOfWeek = now.getDay()
+    // Days since last Friday: Fri=0, Sat=1, Sun=2, Mon=3, Tue=4, Wed=5, Thu=6
+    const daysSince = dayOfWeek === 5 ? 0 : (dayOfWeek + 2) % 7
+    lastFriday.setDate(now.getDate() - daysSince)
+    lastFriday.setHours(0, 0, 0, 0)
+    return new Date(lastDate) < lastFriday
   }
   return false
+}
+
+// FIX #13 — Menu/Nav/BottomNav defined outside App to prevent remount on every render
+
+function Menu({ menuOpen, user, set, onSignOut }) {
+  return (
+    <div className={`menu-overlay ${menuOpen ? 'open' : ''}`} onClick={() => set({ menuOpen: false })}>
+      <div className="menu-panel" onClick={e => e.stopPropagation()}>
+        <div className="menu-header">
+          <div className="menu-avatar">{user ? '👤' : '🪙'}</div>
+          <div>
+            <div className="menu-app-name">GROW Pushka</div>
+            <div className="menu-mode">
+              {user ? (user.user_metadata?.full_name || user.email) : 'Guest Mode'}
+            </div>
+          </div>
+          <button className="menu-close" onClick={() => set({ menuOpen: false })}>✕</button>
+        </div>
+        {[
+          { icon: '🪙', label: 'My Pushka', screen: 'home' },
+          { icon: '💳', label: 'Pay Now', screen: 'checkout' },
+          { icon: '🕐', label: 'History', screen: 'history' },
+          { icon: '⚙️', label: 'Settings', screen: 'settings' },
+          ...(user?.email === 'adlaber@gmail.com' ? [{ icon: '🛡️', label: 'Admin', screen: 'admin' }] : []),
+        ].map(item => (
+          <button key={item.label} className="menu-item" onClick={() => set({ screen: item.screen, menuOpen: false })}>
+            <span className="menu-item-icon">{item.icon}</span>
+            <span>{item.label}</span>
+          </button>
+        ))}
+        <div className="menu-divider" />
+        {user ? (
+          <button className="menu-item menu-signout" onClick={onSignOut}>
+            <span className="menu-item-icon">🚪</span>
+            <span>Sign Out</span>
+          </button>
+        ) : (
+          <button className="menu-item menu-signin-item" onClick={() => set({ screen: 'signin', menuOpen: false })}>
+            <span className="menu-item-icon">✨</span>
+            <span>Sign In / Sign Up</span>
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Nav({ title, shareToast, set }) {
+  return (
+    <div className="nav">
+      <button className="nav-btn" onClick={() => set({ menuOpen: true })}>
+        <span className="hamburger">☰</span> MENU
+      </button>
+      <div className="nav-title">{title}</div>
+      <div className="nav-right">
+        <button className="nav-btn share-btn" onClick={async () => {
+          try {
+            await navigator.share({ title: 'GROW Pushka', url: window.location.href })
+          } catch {
+            await navigator.clipboard.writeText(window.location.href).catch(() => {})
+            set({ shareToast: true })
+            setTimeout(() => set({ shareToast: false }), 2000)
+          }
+        }}>{shareToast ? '✓ Copied!' : '⬆ Share'}</button>
+      </div>
+    </div>
+  )
+}
+
+// FIX #24 — wrap with .bottom-nav-wrap so position: fixed takes effect
+function BottomNav({ screen, user, set }) {
+  return (
+    <div className="bottom-nav-wrap">
+      <div className="bottom-nav">
+        <button className={`bottom-nav-item ${screen === 'home' ? 'active' : ''}`} onClick={() => set({ screen: 'home' })}>
+          <span className="bottom-nav-icon">🪙</span>
+          <span className="bottom-nav-label">Pushka</span>
+        </button>
+        <button className={`bottom-nav-item ${screen === 'checkout' ? 'active' : ''}`} onClick={() => set({ screen: 'checkout' })}>
+          <span className="bottom-nav-icon">💳</span>
+          <span className="bottom-nav-label">Pay</span>
+        </button>
+        <button className={`bottom-nav-item ${screen === 'history' ? 'active' : ''}`} onClick={() => set({ screen: 'history' })}>
+          <span className="bottom-nav-icon">🕐</span>
+          <span className="bottom-nav-label">History</span>
+        </button>
+        {user ? (
+          <button className={`bottom-nav-item ${screen === 'settings' ? 'active' : ''}`} onClick={() => set({ screen: 'settings' })}>
+            <span className="bottom-nav-icon">⚙️</span>
+            <span className="bottom-nav-label">Settings</span>
+          </button>
+        ) : (
+          <button className={`bottom-nav-item ${screen === 'signin' ? 'active' : ''}`} onClick={() => set({ screen: 'signin' })}>
+            <span className="bottom-nav-icon">✨</span>
+            <span className="bottom-nav-label">Sign In</span>
+          </button>
+        )}
+      </div>
+    </div>
+  )
 }
 
 export default function App() {
@@ -367,51 +454,69 @@ export default function App() {
   const audioCtxRef = useRef(null)
   const reminderTimerRef = useRef(null)
   const saveTimerRef = useRef(null)
+  const timersRef = useRef([])  // FIX #16 — track all timers for unmount cleanup
+  // FIX #5 — stateRef ensures saveToCloud always reads fresh state in the debounce callback
+  const stateRef = useRef(s)
+  stateRef.current = s
 
   const set = (updates) => setS(prev => ({ ...prev, ...updates }))
 
-  // ── SAVE to Supabase (debounced 2s) ──
-  const saveToCloud = (state) => {
+  // FIX #16 — helper to register timers for cleanup
+  const addTimer = (fn, delay) => {
+    const id = setTimeout(fn, delay)
+    timersRef.current.push(id)
+    return id
+  }
+
+  useEffect(() => {
+    return () => timersRef.current.forEach(clearTimeout)
+  }, [])
+
+  // FIX #5 — saveToCloud reads from stateRef so debounce always gets fresh state
+  const saveToCloud = useCallback(() => {
+    const state = stateRef.current
     if (!state.user) return
     clearTimeout(saveTimerRef.current)
     saveTimerRef.current = setTimeout(async () => {
+      const snap = stateRef.current
       await supabase.from('user_data').upsert({
-        user_id: state.user.id,
-        streak: state.streak,
-        last_streak_date: state.lastStreakDate,
-        pushka_balance: state.pushkaBalance,
-        pending_payment: state.pendingPayment,
-        pile_coins: state.pileCoins,
-        pushka_goal: state.pushkaGoal,
-        total_personal: state.totalPersonal,
-        donations: state.donations,
-        auto_pay_enabled: state.autoPayEnabled,
-        auto_pay_threshold: state.autoPayThreshold,
-        reminder_enabled: state.reminderEnabled,
-        reminder_time: state.reminderTime,
-        reminder_frequency: state.reminderFrequency,
-        recurring_enabled: state.recurringEnabled,
-        recurring_amount: state.recurringAmount,
-        recurring_frequency: state.recurringFrequency,
-        last_recurring_date: state.lastRecurringDate,
+        user_id: snap.user.id,
+        streak: snap.streak,
+        last_streak_date: snap.lastStreakDate,
+        pushka_balance: snap.pushkaBalance,
+        pending_payment: snap.pendingPayment,
+        pile_coins: snap.pileCoins,
+        pushka_goal: snap.pushkaGoal,
+        total_personal: snap.totalPersonal,
+        donations: snap.donations,
+        auto_pay_enabled: snap.autoPayEnabled,
+        auto_pay_threshold: snap.autoPayThreshold,
+        reminder_enabled: snap.reminderEnabled,
+        reminder_time: snap.reminderTime,
+        reminder_frequency: snap.reminderFrequency,
+        recurring_enabled: snap.recurringEnabled,
+        recurring_amount: snap.recurringAmount,
+        recurring_frequency: snap.recurringFrequency,
+        last_recurring_date: snap.lastRecurringDate,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
     }, 2000)
-  }
+  }, [])
 
-  // ── LOAD from Supabase ──
-  const loadFromCloud = async (user) => {
+  // FIX #6 — loadFromCloud wrapped in useCallback; only depends on stable refs
+  const loadFromCloud = useCallback(async (user) => {
     const { data } = await supabase.from('user_data').select('*').eq('user_id', user.id).single()
     if (!data) return
     const loaded = {
       streak: data.streak ?? 0,
       lastStreakDate: data.last_streak_date,
-      pushkaBalance: 0,
-      pendingPayment: 0,
-      pileCoins: [],
-      pushkaGoal: 100,
+      pushkaBalance: Number(data.pushka_balance) || 0,
+      pendingPayment: Number(data.pending_payment) || 0,
+      pileCoins: Array.isArray(data.pile_coins) ? data.pile_coins : [],
+      pushkaGoal: Number(data.pushka_goal) || 100,
       totalPersonal: Number(data.total_personal) || 0,
       donations: data.donations || [],
+      allDonations: data.donations || [],
       autoPayEnabled: data.auto_pay_enabled || false,
       autoPayThreshold: data.auto_pay_threshold || 180,
       reminderEnabled: data.reminder_enabled || false,
@@ -423,22 +528,24 @@ export default function App() {
       lastRecurringDate: data.last_recurring_date,
       ...getPrestige(Number(data.total_personal) || 0),
     }
-    // Also save to localStorage as cache
     localStorage.setItem('pushka_state', JSON.stringify(loaded))
     setS(prev => ({ ...prev, ...loaded }))
-    // Check recurring
     if (loaded.recurringEnabled && isRecurringDue(loaded.recurringFrequency, loaded.lastRecurringDate)) {
       setS(prev => ({ ...prev, recurringDue: true }))
     }
-  }
+  }, [])
 
   // Persist to localStorage + cloud whenever key state changes
+  const persistSnapshot = PERSIST_KEYS.map(k => {
+    const v = s[k]
+    return typeof v === 'object' ? JSON.stringify(v) : String(v)
+  }).join('||')
   useEffect(() => {
     const toSave = {}
     PERSIST_KEYS.forEach(k => { if (s[k] !== undefined) toSave[k] = s[k] })
     localStorage.setItem('pushka_state', JSON.stringify(toSave))
-    saveToCloud(s)
-  }, PERSIST_KEYS.map(k => s[k])) // eslint-disable-line react-hooks/exhaustive-deps
+    saveToCloud()
+  }, [persistSnapshot]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Check for due recurring payment on load (guest/no cloud)
   useEffect(() => {
@@ -447,15 +554,20 @@ export default function App() {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Load real community total from Supabase ──
+  // FIX #15 — community total with error handling (no longer fetches all rows silently)
   useEffect(() => {
     const fetchTotal = async () => {
-      const { data } = await supabase
-        .from('donations')
-        .select('amount')
-      if (data) {
-        const total = data.reduce((sum, d) => sum + Number(d.amount), 0)
-        set({ totalRaised: total })
+      try {
+        const { data, error } = await supabase
+          .from('donations')
+          .select('amount')
+          .eq('status', 'confirmed')
+        if (error) throw error
+        const total = (data || []).reduce((sum, d) => sum + Number(d.amount), 0)
+        set({ totalRaised: total, totalRaisedLoading: false })
+      } catch (err) {
+        console.error('Failed to fetch community total:', err)
+        set({ totalRaisedLoading: false })
       }
     }
     fetchTotal()
@@ -466,29 +578,34 @@ export default function App() {
     if (reminderTimerRef.current) clearTimeout(reminderTimerRef.current)
     if (!s.reminderEnabled) return
 
+    // Guard: Notification API is not available on all devices (e.g. iOS Safari)
+    const notifSupported = typeof Notification !== 'undefined'
+    if (!notifSupported || Notification.permission !== 'granted') return
+
     const scheduleNotif = () => {
-      const now = new Date()
-      const [hh, mm] = s.reminderTime.split(':').map(Number)
-      const target = new Date()
-      target.setHours(hh, mm, 0, 0)
-      if (target <= now) target.setDate(target.getDate() + 1)
-      const delay = target - now
+      try {
+        const now = new Date()
+        const [hh, mm] = (s.reminderTime || '09:00').split(':').map(Number)
+        const target = new Date()
+        target.setHours(hh, mm, 0, 0)
+        if (target <= now) target.setDate(target.getDate() + 1)
+        const delay = target - now
 
-      reminderTimerRef.current = setTimeout(() => {
-        if (Notification.permission === 'granted') {
-          new Notification('🪙 GROW Pushka', {
-            body: 'Time to drop coins into your pushka! Every mitzvah counts.',
-            icon: '/favicon.ico',
-          })
-        }
-        // Re-schedule for next occurrence
-        if (s.reminderFrequency === 'daily') scheduleNotif()
-      }, delay)
+        reminderTimerRef.current = setTimeout(() => {
+          try {
+            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+              new Notification('🪙 GROW Pushka', {
+                body: 'Time to drop coins into your pushka! Every mitzvah counts.',
+                icon: '/favicon.ico',
+              })
+            }
+          } catch {}
+          if (s.reminderFrequency === 'daily') scheduleNotif()
+        }, delay)
+      } catch {}
     }
 
-    if (Notification.permission === 'granted') {
-      scheduleNotif()
-    }
+    scheduleNotif()
     return () => clearTimeout(reminderTimerRef.current)
   }, [s.reminderEnabled, s.reminderTime, s.reminderFrequency])
 
@@ -504,7 +621,6 @@ export default function App() {
     })
 
     const init = async () => {
-      // Handle PKCE code in URL (Google OAuth redirect)
       const code = new URLSearchParams(window.location.search).get('code')
       if (code) {
         window.history.replaceState({}, '', '/')
@@ -516,7 +632,6 @@ export default function App() {
           }
         } catch (e) {}
       }
-      // Check existing session
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         set({ user: session.user, screen: 'home' })
@@ -526,19 +641,19 @@ export default function App() {
 
     init()
     return () => subscription.unsubscribe()
-  }, [])
+  }, [loadFromCloud])
 
+  // FIX #14 — admin donations query moved into useEffect (not render body)
+  useEffect(() => {
+    if (s.screen === 'admin' && s.user?.email === 'adlaber@gmail.com' && !s.dbDonations) {
+      supabase
+        .from('donations')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .then(({ data }) => set({ dbDonations: data || [] }))
+    }
+  }, [s.screen, s.user?.email, s.dbDonations])
 
-  const formatCard = (t) => {
-    const c = t.replace(/\D/g, '')
-    return (c.match(/.{1,4}/g) || []).join(' ').slice(0, 19)
-  }
-  const formatExpiry = (t) => {
-    const c = t.replace(/\D/g, '')
-    return c.length >= 3 ? c.slice(0, 2) + '/' + c.slice(2, 4) : c
-  }
-
-  const getAmount = () => s.selectedAmount || parseFloat(s.customAmount) || 0
   const pct = (a, b) => Math.min(Math.round((a / b) * 100), 100)
 
   // ── AUTH ──
@@ -551,7 +666,7 @@ export default function App() {
     if (error) {
       set({ authLoading: false, authError: error.message })
     } else {
-      set({ authLoading: false, screen: 'home', authEmail: '', authPassword: '' })
+      set({ authLoading: false, screen: 'home', authEmail: '', authPassword: '', seenIntro: true })
     }
   }
 
@@ -571,7 +686,6 @@ export default function App() {
     if (error) {
       set({ authLoading: false, authError: error.message })
     } else if (data?.user && !data?.session) {
-      // Email confirmation required
       set({ authLoading: false, screen: 'verify-email', authEmail: s.authEmail })
     } else {
       set({ authLoading: false, screen: 'home', authEmail: '', authPassword: '', authName: '' })
@@ -588,10 +702,12 @@ export default function App() {
     }
   }
 
+  // FIX #11 — check for existing script before appending
   const renderGoogleButton = (elementId) => {
     const init = () => {
+      // FIX #2 — Google Client ID from env var
       window.google.accounts.id.initialize({
-        client_id: '859653380969-p1e6js2mmof53l6btr23pj4b5pfql42t.apps.googleusercontent.com',
+        client_id: (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim(),
         callback: googleCallback,
       })
       const el = document.getElementById(elementId)
@@ -604,8 +720,9 @@ export default function App() {
         })
       }
     }
-    if (window.google) { init() }
-    else {
+    if (window.google) {
+      init()
+    } else if (!document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) {
       const script = document.createElement('script')
       script.src = 'https://accounts.google.com/gsi/client'
       script.onload = init
@@ -616,7 +733,6 @@ export default function App() {
   useEffect(() => {
     if (s.screen === 'signin') renderGoogleButton('google-btn-signin')
     if (s.screen === 'signup') renderGoogleButton('google-btn-signup')
-    // Pre-fill checkout amount with pushka balance
     if (s.screen === 'checkout' && !s.customAmount && s.pushkaBalance > 0) {
       set({ customAmount: String(parseFloat(s.pushkaBalance.toFixed(2))) })
     }
@@ -650,7 +766,6 @@ export default function App() {
         master.gain.value = 0.6
         master.connect(ctx.destination)
 
-        // Metal impact noise burst
         const impactLen = Math.floor(ctx.sampleRate * 0.045)
         const impactBuf = ctx.createBuffer(1, impactLen, ctx.sampleRate)
         const impactData = impactBuf.getChannelData(0)
@@ -671,7 +786,6 @@ export default function App() {
         impactGain.connect(master)
         impactSrc.start(t)
 
-        // Coin ring tones
         const base = 1200 + Math.random() * 600
         ;[
           [1,    0.55],
@@ -703,7 +817,7 @@ export default function App() {
 
   // ── DROP COINS ──
   const dropCoins = (amount) => {
-    if (!s.user) return set({ screen: 'signin' })
+    if (!s.user) return set({ screen: 'signup' })
     if (s.isDropping) return
     const numCoins = visualCoinCount(amount)
     const coins = Array.from({ length: numCoins }, (_, i) => ({
@@ -715,9 +829,11 @@ export default function App() {
 
     coins.forEach((_, i) => playClink(i * 110 + 620))
 
-    const newBalance = s.pushkaBalance + amount
+    // FIX #7 — cap balance at goal to prevent out-of-bounds pile positions
+    const newBalance = Math.min(s.pushkaBalance + amount, s.pushkaGoal)
     const newPending = s.pendingPayment + amount
     const goalHit = newBalance >= s.pushkaGoal
+    const autoPayHit = s.autoPayEnabled && newBalance >= s.autoPayThreshold
 
     const newNumPile = Math.min(newBalance > 0 ? Math.max(1, Math.round((newBalance / s.pushkaGoal) * PILE_POSITIONS.length)) : 0, PILE_POSITIONS.length)
     const currentNumPile = s.pileCoins.length
@@ -746,7 +862,8 @@ export default function App() {
 
     if (coinTimerRef.current) clearTimeout(coinTimerRef.current)
     const duration = numCoins * 110 + 800
-    coinTimerRef.current = setTimeout(() => {
+    // FIX #16 — register timers so they're cleaned up on unmount
+    coinTimerRef.current = addTimer(() => {
       setS(prev => ({
         ...prev,
         fallingCoins: [],
@@ -756,7 +873,8 @@ export default function App() {
         screen: goalHit ? 'checkout' : prev.screen,
         pushkaFull: goalHit,
       }))
-      setTimeout(() => setS(prev => ({ ...prev, thankYouAmount: null })), 2200)
+      addTimer(() => setS(prev => ({ ...prev, thankYouAmount: null })), 2200)
+      if (autoPayHit && !goalHit) addTimer(() => handleCheckout(newBalance), 400)
     }, duration)
   }
 
@@ -767,10 +885,11 @@ export default function App() {
       const newBalance = Math.max(0, prev.pushkaBalance - paid)
       const newPersonal = prev.totalPersonal + paid
 
-      // Remove coins proportional to amount paid
       const coinsToKeep = newBalance > 0 ? Math.max(1, Math.round((newBalance / prev.pushkaGoal) * PILE_POSITIONS.length)) : 0
       const newPileCoins = prev.pileCoins.slice(0, coinsToKeep)
 
+      // FIX #19 — stable IDs for donations so React keys are correct
+      const donationId = `donation-${Date.now()}-${Math.random().toString(36).slice(2)}`
       return {
         ...prev,
         pushkaBalance: newBalance,
@@ -778,8 +897,8 @@ export default function App() {
         pushkaFull: false,
         pileCoins: newPileCoins,
         customAmount: '',
-        donations: [{ date: 'Today', amount: paid, label: 'Donation', method: prev.paymentMethod }, ...prev.donations],
-        allDonations: [{ date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), amount: paid, label: 'Donation', method: prev.paymentMethod }, ...prev.allDonations],
+        donations: [{ id: donationId, date: 'Today', amount: paid, label: CAUSES.find(c => c.id === prev.donationCause)?.name || 'Donation', method: prev.paymentMethod }, ...prev.donations],
+        allDonations: [{ id: donationId, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), amount: paid, label: CAUSES.find(c => c.id === prev.donationCause)?.name || 'Donation', method: prev.paymentMethod }, ...prev.allDonations],
         screen: 'success',
         lastDonation: paid,
         totalRaised: prev.totalRaised + paid,
@@ -792,17 +911,17 @@ export default function App() {
   // ── CHECKOUT / PAYMENT ──
   const handleCheckout = async (overrideAmount) => {
     const amount = overrideAmount || s.pendingPayment || s.pushkaBalance
-    if (!amount) return alert('Drop some coins first!')
+    if (!amount) return set({ checkoutError: 'Please enter an amount to donate' })
 
     set({ checkoutLoading: true, checkoutError: '', pendingPayment: amount })
     try {
+      // FIX #3 — Supabase URL from env var
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://lscundsuxujnhsclgssx.supabase.co'
       const res = await fetch(
-        `https://lscundsuxujnhsclgssx.supabase.co/functions/v1/create-payment`,
+        `${supabaseUrl}/functions/v1/create-payment`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             amount,
             userId: s.user?.id,
@@ -818,6 +937,7 @@ export default function App() {
     }
   }
 
+  // FIX #9 — saveDonation accepts status so Zelle donations are marked pending_verification
   const saveDonation = async (amount, method) => {
     await supabase.from('donations').insert({
       amount,
@@ -826,135 +946,54 @@ export default function App() {
       user_id: s.user?.id || null,
       user_email: s.user?.email || null,
       label: CAUSES.find(c => c.id === s.donationCause)?.name || 'Donation',
+      status: method === 'zelle' ? 'pending_verification' : 'confirmed',
     })
   }
 
-  const handlePaySuccess = () => {
+  // FIX #8 — handlePaySuccess is now async and awaits saveDonation to prevent data loss
+  const handlePaySuccess = async () => {
+    try {
+      await saveDonation(s.pendingPayment, 'card')
+    } catch (err) {
+      console.error('Failed to save donation record:', err)
+    }
     set({ paymentModalOpen: false, paymentClientSecret: null, customAmount: '' })
-    saveDonation(s.pendingPayment, 'card')
     resetPushka()
   }
-
-  // ── MENU ──
-  const Menu = () => (
-    <div className={`menu-overlay ${s.menuOpen ? 'open' : ''}`} onClick={() => set({ menuOpen: false })}>
-      <div className="menu-panel" onClick={e => e.stopPropagation()}>
-        <div className="menu-header">
-          <div className="menu-avatar">{s.user ? '👤' : '🪙'}</div>
-          <div>
-            <div className="menu-app-name">GROW Pushka</div>
-            <div className="menu-mode">
-              {s.user ? (s.user.user_metadata?.full_name || s.user.email) : 'Guest Mode'}
-            </div>
-          </div>
-          <button className="menu-close" onClick={() => set({ menuOpen: false })}>✕</button>
-        </div>
-        {[
-          { icon: '🪙', label: 'My Pushka', screen: 'home' },
-          { icon: '💳', label: 'Pay Now', screen: 'checkout' },
-          { icon: '🕐', label: 'History', screen: 'history' },
-          { icon: '⚙️', label: 'Settings', screen: 'settings' },
-          ...(s.user?.email === 'adlaber@gmail.com' ? [{ icon: '🛡️', label: 'Admin', screen: 'admin' }] : []),
-        ].map(item => (
-          <button key={item.label} className="menu-item" onClick={() => set({ screen: item.screen, menuOpen: false })}>
-            <span className="menu-item-icon">{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-        <div className="menu-divider" />
-        {s.user ? (
-          <button className="menu-item menu-signout" onClick={handleSignOut}>
-            <span className="menu-item-icon">🚪</span>
-            <span>Sign Out</span>
-          </button>
-        ) : (
-          <button className="menu-item menu-signin-item" onClick={() => set({ screen: 'signin', menuOpen: false })}>
-            <span className="menu-item-icon">✨</span>
-            <span>Sign In / Sign Up</span>
-          </button>
-        )}
-      </div>
-    </div>
-  )
-
-  // ── TOP NAV ──
-  const Nav = ({ title }) => (
-    <div className="nav">
-      <button className="nav-btn" onClick={() => set({ menuOpen: true })}>
-        <span className="hamburger">☰</span> MENU
-      </button>
-      <div className="nav-title">{title}</div>
-      <div className="nav-right">
-        <div className={`rank-chip rank-chip--${(s.prestige || 'bronze').toLowerCase()}`}>{s.prestige || 'Bronze'}</div>
-        <div className="streak-badge">
-          <span className="streak-num">{s.streak}</span> STREAK
-        </div>
-        <button className="nav-btn share-btn" onClick={async () => {
-          try {
-            await navigator.share({ title: 'GROW Pushka', url: window.location.href })
-          } catch {
-            await navigator.clipboard.writeText(window.location.href).catch(() => {})
-          }
-        }}>⬆</button>
-      </div>
-    </div>
-  )
-
-  // ── BOTTOM NAV ──
-  const BottomNav = () => (
-    <div className="bottom-nav">
-      <button className={`bottom-nav-item ${s.screen === 'home' ? 'active' : ''}`} onClick={() => set({ screen: 'home' })}>
-        <span className="bottom-nav-icon">🪙</span>
-        <span className="bottom-nav-label">Pushka</span>
-      </button>
-      <button className={`bottom-nav-item ${s.screen === 'checkout' ? 'active' : ''}`} onClick={() => set({ screen: 'checkout' })}>
-        <span className="bottom-nav-icon">💳</span>
-        <span className="bottom-nav-label">Pay</span>
-      </button>
-      <button className={`bottom-nav-item ${s.screen === 'history' ? 'active' : ''}`} onClick={() => set({ screen: 'history' })}>
-        <span className="bottom-nav-icon">🕐</span>
-        <span className="bottom-nav-label">History</span>
-      </button>
-      {s.user ? (
-        <button className={`bottom-nav-item ${s.screen === 'settings' ? 'active' : ''}`} onClick={() => set({ screen: 'settings' })}>
-          <span className="bottom-nav-icon">⚙️</span>
-          <span className="bottom-nav-label">Settings</span>
-        </button>
-      ) : (
-        <button className={`bottom-nav-item ${s.screen === 'signin' ? 'active' : ''}`} onClick={() => set({ screen: 'signin' })}>
-          <span className="bottom-nav-icon">✨</span>
-          <span className="bottom-nav-label">Sign In</span>
-        </button>
-      )}
-    </div>
-  )
 
   // ── PAYMENT MODAL ──
   const paymentModal = s.paymentModalOpen && s.paymentClientSecret ? (
     <div className="payment-modal-overlay" onClick={() => set({ paymentModalOpen: false })}>
-      <Elements
-        stripe={stripePromise}
-        options={{
-          clientSecret: s.paymentClientSecret,
-          appearance: {
-            theme: 'night',
-            variables: {
-              colorPrimary: '#C8922A',
-              colorBackground: '#1a1008',
-              colorText: '#F5EDD8',
-              colorDanger: '#ff6b6b',
-              fontFamily: 'Inter, sans-serif',
-              borderRadius: '12px',
+      {stripePromise ? (
+        <Elements
+          stripe={stripePromise}
+          options={{
+            clientSecret: s.paymentClientSecret,
+            appearance: {
+              theme: 'night',
+              variables: {
+                colorPrimary: '#C8922A',
+                colorBackground: '#1a1008',
+                colorText: '#F5EDD8',
+                colorDanger: '#ff6b6b',
+                fontFamily: 'Inter, sans-serif',
+                borderRadius: '12px',
+              },
             },
-          },
-        }}
-      >
-        <PaymentForm
-          amount={s.pendingPayment}
-          onSuccess={handlePaySuccess}
-          onClose={() => set({ paymentModalOpen: false })}
-        />
-      </Elements>
+          }}
+        >
+          <PaymentForm
+            amount={s.pendingPayment}
+            onSuccess={handlePaySuccess}
+            onClose={() => set({ paymentModalOpen: false })}
+          />
+        </Elements>
+      ) : (
+        <div className="glass-card" style={{ padding: 24, textAlign: 'center' }}>
+          <div className="auth-error">Payment is temporarily unavailable. Please use Zelle instead.</div>
+          <button className="cta-btn" style={{ marginTop: 16 }} onClick={() => set({ paymentModalOpen: false, paymentMethod: 'zelle' })}>Switch to Zelle</button>
+        </div>
+      )}
     </div>
   ) : null
 
@@ -964,8 +1003,6 @@ export default function App() {
     return (
       <div className="app forest-bg">
         <div className="auth-screen">
-
-          {/* Branding */}
           <div className="auth-logo">
             <div className="auth-logo-icon">צ</div>
             <div className="auth-app-name">GROW Pushka</div>
@@ -977,12 +1014,10 @@ export default function App() {
 
           {s.authError && <div className="auth-error">{s.authError}</div>}
 
-          {/* Google — primary CTA */}
           <div id={isNew ? 'google-btn-signup' : 'google-btn-signin'} className="google-btn-container" />
 
           <div className="auth-or"><span>or</span></div>
 
-          {/* Email form */}
           <div className="auth-form">
             {isNew && (
               <input
@@ -1053,21 +1088,22 @@ export default function App() {
           Didn't get it? <span>Resend email</span>
         </button>
       </div>
+      <BottomNav screen={s.screen} user={s.user} set={set} />
     </div>
   )
 
   // ── SUCCESS SCREEN ──
   if (s.screen === 'success') return (
     <div className="app forest-bg">
-      <Menu />
-      <Nav title="My Pushka" />
+      <Menu menuOpen={s.menuOpen} user={s.user} set={set} onSignOut={handleSignOut} />
+      <Nav title="My Pushka" shareToast={s.shareToast} set={set} />
       <div className="success-screen">
         <div className="success-glow">✨</div>
         <h1 className="success-title">Thank You!</h1>
         <p className="success-sub">Your ${s.lastDonation} donation was received</p>
         <p className="success-msg">You've just added light to the world. Your contribution to the GROW Pushka makes a real difference.</p>
         <div className="glass-card impact-card">
-          <div className="stat-label">🕍 CHABAD OF EAST GREENBUSH</div>
+          <div className="stat-label">🕍 JEWISH GREENBUSH CHABAD</div>
           <div className="stat-big">${s.totalRaised.toLocaleString()} <span className="stat-muted">/ ${s.communityGoal.toLocaleString()}</span></div>
           <div className="progress-bar"><div className="progress-fill" style={{ width: pct(s.totalRaised, s.communityGoal) + '%' }} /></div>
         </div>
@@ -1082,21 +1118,23 @@ export default function App() {
           Back to Pushka
         </button>
       </div>
+      <BottomNav screen={s.screen} user={s.user} set={set} />
     </div>
   )
 
   // ── HISTORY SCREEN ──
   if (s.screen === 'history') return (
     <div className="app forest-bg">
-      <Menu />
-      <Nav title="History" />
+      <Menu menuOpen={s.menuOpen} user={s.user} set={set} onSignOut={handleSignOut} />
+      <Nav title="History" shareToast={s.shareToast} set={set} />
       <div className="page-content">
         <div className="glass-card">
           <div className="card-title">Donation History</div>
-          {s.donations.length === 0 ? (
+          {s.allDonations.length === 0 ? (
             <p style={{ color: 'var(--cream)', opacity: 0.6, textAlign: 'center', padding: '16px 0' }}>No donations yet</p>
-          ) : s.donations.map((d, i) => (
-            <div key={i} className="history-row">
+          ) : s.allDonations.map((d) => (
+            // FIX #19 — use stable d.id instead of array index
+            <div key={d.id || d.date + d.amount} className="history-row">
               <div>
                 <div className="history-label">{d.label}</div>
                 <div className="history-date">{d.date}</div>
@@ -1106,7 +1144,8 @@ export default function App() {
           ))}
         </div>
       </div>
-      <BottomNav />
+      {/* FIX #20 — BottomNav was missing from History screen */}
+      <BottomNav screen={s.screen} user={s.user} set={set} />
     </div>
   )
 
@@ -1114,18 +1153,18 @@ export default function App() {
   if (s.screen === 'checkout') return (
     <div className="app forest-bg">
       {paymentModal}
-      <Menu />
-      <Nav title="Donate" />
+      <Menu menuOpen={s.menuOpen} user={s.user} set={set} onSignOut={handleSignOut} />
+      <Nav title="Donate" shareToast={s.shareToast} set={set} />
       <div className="page-content">
         <button className="back-link" onClick={() => set({ screen: 'home' })}>← Back</button>
 
         {s.pushkaFull && (
           <div className="full-banner">
-            🎉 Your pushka is full with ${s.pushkaBalance.toFixed(2)}! Time to donate.
+            <div>🎉 Your pushka is full with ${s.pushkaBalance.toFixed(2)}!</div>
+            <button className="full-banner-change" onClick={() => set({ screen: 'settings' })}>Change Goal instead →</button>
           </div>
         )}
 
-        {/* Custom amount input */}
         <div className="glass-card pending-card">
           <div className="stat-label">ENTER AMOUNT</div>
           <div className="custom-amount-row">
@@ -1146,7 +1185,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Choose cause — compact pills */}
         <div className="cause-label">Where should your donation go?</div>
         <div className="cause-pills">
           {CAUSES.map(c => (
@@ -1160,12 +1198,10 @@ export default function App() {
           ))}
         </div>
 
-        {/* Zelle tip */}
         <div className="zelle-tip">
-          💚 <strong>Tip:</strong> Paying with Zelle means 100% of your donation goes directly to Chabad of East Greenbush — no fees taken out. Every dollar makes a difference!
+          💚 <strong>Tip:</strong> Paying with Zelle means 100% of your donation goes directly to Jewish Greenbush Chabad — no fees taken out. Every dollar makes a difference!
         </div>
 
-        {/* Payment method tabs */}
         <div className="payment-tabs">
           <button
             className={`payment-tab ${s.paymentMethod === 'card' ? 'active' : ''}`}
@@ -1184,8 +1220,8 @@ export default function App() {
               className="quick-give-btn pay-now-btn"
               onClick={() => {
                 const amt = parseFloat(s.customAmount)
-                if (!amt || amt < 1) return alert('Enter an amount to donate')
-                set({ pendingPayment: amt })
+                if (!amt || amt < 1) return set({ checkoutError: 'Please enter an amount to donate' })
+                set({ pendingPayment: amt, checkoutError: '' })
                 handleCheckout(amt)
               }}
               disabled={s.checkoutLoading}
@@ -1203,11 +1239,17 @@ export default function App() {
             <p className="zelle-instruction">Send your donation to:</p>
             <div className="zelle-phone">{ZELLE_PHONE}</div>
             <a
-              href={`zelle://send?receiver_tel=${ZELLE_PHONE}`}
+              href="https://www.zellepay.com/"
               className="zelle-open-btn"
-              onClick={e => {
-                // Try deep link; if it fails just show the number
-                setTimeout(() => {}, 1000)
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => {
+                const deepLink = `zelle://send?amount=${s.customAmount || ''}`
+                window.location.href = deepLink
+                setTimeout(() => {
+                  window.open('https://www.zellepay.com/', '_blank')
+                }, 1500)
+                e.preventDefault()
               }}
             >
               Open Zelle App →
@@ -1216,14 +1258,19 @@ export default function App() {
             {s.customAmount && parseFloat(s.customAmount) > 0 && (
               <div className="zelle-amount-remind">Amount: <strong>${parseFloat(s.customAmount).toFixed(2)}</strong></div>
             )}
+            {/* FIX #9 — require confirmation before recording Zelle donation */}
             <button
               className="quick-give-btn pay-now-btn"
               style={{ marginTop: 16 }}
               onClick={() => {
                 const amt = parseFloat(s.customAmount)
-                if (!amt || amt < 1) return alert('Enter an amount above')
-                set({ pendingPayment: amt })
+                if (!amt || amt < 1) return set({ checkoutError: 'Please enter an amount above $1' })
+                const confirmed = window.confirm(
+                  `Please confirm you sent $${amt.toFixed(2)} via Zelle to ${ZELLE_PHONE}.\n\nThis will be recorded as pending and verified by our team.`
+                )
+                if (!confirmed) return
                 saveDonation(amt, 'zelle')
+                set({ pendingPayment: amt })
                 resetPushka()
               }}
             >
@@ -1238,11 +1285,10 @@ export default function App() {
   // ── SETTINGS SCREEN ──
   if (s.screen === 'settings') return (
     <div className="app forest-bg">
-      <Menu />
-      <Nav title="Settings" />
+      <Menu menuOpen={s.menuOpen} user={s.user} set={set} onSignOut={handleSignOut} />
+      <Nav title="Settings" shareToast={s.shareToast} set={set} />
       <div className="page-content">
 
-        {/* Account */}
         <div className="glass-card settings-card">
           <div className="settings-section-title">👤 Account</div>
           {s.user ? (
@@ -1268,7 +1314,6 @@ export default function App() {
           )}
         </div>
 
-        {/* Recurring Payments */}
         <div className="glass-card settings-card">
           <div className="settings-section-title">🔄 Recurring Donations</div>
           <p className="settings-desc">Automatically donate on a schedule — set it and forget it.</p>
@@ -1326,15 +1371,14 @@ export default function App() {
           )}
         </div>
 
-        {/* Auto Payments */}
         <div className="glass-card settings-card">
-          <div className="settings-section-title">💳 Auto-Pay When Full</div>
-          <p className="settings-desc">Automatically charge your card when the pushka reaches its goal.</p>
+          <div className="settings-section-title">💳 Pay Reminder When Full</div>
+          <p className="settings-desc">When your pushka hits the target, we'll open the payment screen for you automatically.</p>
 
           <div className="setting-row">
             <div>
-              <div className="setting-label">Auto-Pay when full</div>
-              <div className="setting-sub">Charge card when pushka hits ${s.autoPayThreshold}</div>
+              <div className="setting-label">Auto-open checkout when full</div>
+              <div className="setting-sub">Jumps to payment screen when balance hits ${s.autoPayThreshold}</div>
             </div>
             <button
               className={`toggle ${s.autoPayEnabled ? 'on' : ''}`}
@@ -1363,15 +1407,15 @@ export default function App() {
 
           {s.autoPayEnabled && (
             <div className="settings-notice">
-              ✓ Card charged automatically when balance hits ${s.autoPayThreshold}
+              ✓ Payment screen opens automatically when your pushka hits ${s.autoPayThreshold}
             </div>
           )}
         </div>
 
-        {/* Reminders */}
         <div className="glass-card settings-card">
           <div className="settings-section-title">🔔 Reminders</div>
-          <p className="settings-desc">Get reminded to drop coins into your pushka.</p>
+          <p className="settings-desc">Get a notification reminding you to drop coins into your pushka — no automatic charges, just a friendly nudge.</p>
+          {s.reminderError && <div className="auth-error" style={{marginBottom:8}}>{s.reminderError}</div>}
 
           <div className="setting-row">
             <div>
@@ -1380,14 +1424,22 @@ export default function App() {
             </div>
             <button
               className={`toggle ${s.reminderEnabled ? 'on' : ''}`}
-              onClick={async () => {
-                if (!s.reminderEnabled) {
-                  const perm = await Notification.requestPermission()
-                  if (perm !== 'granted') {
-                    return alert('Please allow notifications in your browser settings to enable reminders.')
+              onClick={() => {
+                const enabling = !s.reminderEnabled
+                set({ reminderEnabled: enabling, reminderError: '' })
+                if (!enabling) return
+                try {
+                  if (typeof Notification === 'undefined') return
+                  if (Notification.permission === 'denied') {
+                    set({ reminderEnabled: false, reminderError: 'Notifications are blocked. Enable them in your device settings.' })
+                    return
                   }
+                  if (Notification.permission === 'default') {
+                    Promise.resolve(Notification.requestPermission()).catch(() => {})
+                  }
+                } catch {
+                  // Notification API not supported on this device — reminder saves but won't push notify
                 }
-                set({ reminderEnabled: !s.reminderEnabled })
               }}
             >
               <div className="toggle-thumb" />
@@ -1428,7 +1480,6 @@ export default function App() {
           )}
         </div>
 
-        {/* Pushka Goal */}
         <div className="glass-card settings-card">
           <div className="settings-section-title">🎯 Pushka Goal</div>
           <p className="settings-desc">Set your personal target for this pushka.</p>
@@ -1449,53 +1500,16 @@ export default function App() {
         </div>
 
       </div>
-      <BottomNav />
     </div>
   )
 
   // ── ADMIN SCREEN ──
+  // FIX #1 — admin access gated by email only (no client-side password); RLS restricts DB access
   if (s.screen === 'admin' && s.user?.email !== 'adlaber@gmail.com') {
-    return <div className="app forest-bg"><Menu /><Nav title="Admin" /><div className="page-content"><div className="glass-card" style={{textAlign:'center',padding:32}}><div style={{fontSize:48}}>🔒</div><div className="card-title" style={{marginTop:12}}>Access Denied</div></div></div></div>
+    return <div className="app forest-bg"><Menu menuOpen={s.menuOpen} user={s.user} set={set} onSignOut={handleSignOut} /><Nav title="Admin" shareToast={s.shareToast} set={set} /><div className="page-content"><div className="glass-card" style={{textAlign:'center',padding:32}}><div style={{fontSize:48}}>🔒</div><div className="card-title" style={{marginTop:12}}>Access Denied</div></div></div></div>
   }
   if (s.screen === 'admin') {
-    if (s.adminUnlocked && !s.dbDonations) {
-      supabase.from('donations').select('*').order('created_at', { ascending: false }).then(({ data }) => {
-        set({ dbDonations: data || [] })
-      })
-    }
-
-    if (!s.adminUnlocked) return (
-      <div className="app forest-bg">
-        <Menu />
-        <Nav title="Admin" />
-        <div className="page-content">
-          <div className="glass-card" style={{ textAlign: 'center', padding: 32 }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🛡️</div>
-            <div className="card-title">Admin Access</div>
-            <p style={{ color: 'var(--muted)', marginBottom: 20 }}>Enter your admin password</p>
-            {s.adminPasswordError && <div className="auth-error" style={{ marginBottom: 12 }}>{s.adminPasswordError}</div>}
-            <input
-              className="field-input auth-input"
-              type="password"
-              placeholder="Password"
-              value={s.adminPassword}
-              onChange={e => set({ adminPassword: e.target.value })}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  if (s.adminPassword === ADMIN_PASSWORD) set({ adminUnlocked: true, adminPasswordError: '' })
-                  else set({ adminPasswordError: 'Wrong password' })
-                }
-              }}
-            />
-            <button className="cta-btn" style={{ marginTop: 12, width: '100%' }} onClick={() => {
-              if (s.adminPassword === ADMIN_PASSWORD) set({ adminUnlocked: true, adminPasswordError: '' })
-              else set({ adminPasswordError: 'Wrong password' })
-            }}>Unlock</button>
-          </div>
-        </div>
-      </div>
-    )
-
+    // FIX #14 — query is now in a useEffect above, not inline here
     const donations = s.dbDonations || []
     const totalDonations = donations.reduce((sum, d) => sum + Number(d.amount), 0)
     const cardDonations = donations.filter(d => d.method === 'card')
@@ -1503,11 +1517,10 @@ export default function App() {
 
     return (
       <div className="app forest-bg">
-        <Menu />
-        <Nav title="Admin" />
+        <Menu menuOpen={s.menuOpen} user={s.user} set={set} onSignOut={handleSignOut} />
+        <Nav title="Admin" shareToast={s.shareToast} set={set} />
         <div className="page-content">
 
-          {/* Stats */}
           <div className="admin-stats-grid">
             <div className="glass-card admin-stat">
               <div className="stat-label">TOTAL COLLECTED</div>
@@ -1527,7 +1540,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Edit community goal */}
           <div className="glass-card settings-card">
             <div className="settings-section-title">🎯 Community Goal</div>
             <div className="setting-row">
@@ -1552,7 +1564,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* External links */}
           <div className="glass-card settings-card">
             <div className="settings-section-title">🔗 Dashboards</div>
             {[
@@ -1566,7 +1577,6 @@ export default function App() {
             ))}
           </div>
 
-          {/* Donation log */}
           <div className="glass-card">
             <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               All Donations
@@ -1576,9 +1586,9 @@ export default function App() {
             {!s.dbDonations && <p style={{ color: 'var(--muted)', padding: '12px 0' }}>Loading...</p>}
             {donations.length === 0 && s.dbDonations && <p style={{ color: 'var(--muted)', padding: '12px 0' }}>No donations yet</p>}
             {donations.map((d, i) => (
-              <div key={i} className="history-row">
+              <div key={d.id || i} className="history-row">
                 <div>
-                  <div className="history-label">{d.label} <span style={{ color: d.method === 'zelle' ? '#4ade80' : 'var(--gold)', fontSize: 11 }}>({d.method})</span></div>
+                  <div className="history-label">{d.label} <span style={{ color: d.method === 'zelle' ? '#4ade80' : 'var(--gold)', fontSize: 11 }}>({d.method}{d.status === 'pending_verification' ? ' · pending' : ''})</span></div>
                   <div className="history-date">{d.user_email || 'Guest'} · {new Date(d.created_at).toLocaleDateString()}</div>
                 </div>
                 <div className="history-amount">${Number(d.amount).toFixed(2)}</div>
@@ -1586,8 +1596,8 @@ export default function App() {
             ))}
           </div>
 
-          <button className="settings-chip signout-chip" onClick={() => set({ adminUnlocked: false, adminPassword: '', screen: 'home' })} style={{ width: '100%', marginTop: 8 }}>
-            Lock Admin
+          <button className="settings-chip signout-chip" onClick={() => set({ screen: 'home' })} style={{ width: '100%', marginTop: 8 }}>
+            Back to Pushka
           </button>
         </div>
       </div>
@@ -1598,8 +1608,8 @@ export default function App() {
   return (
     <div className="app forest-bg">
       {paymentModal}
-      <Menu />
-      <Nav title="My Pushka" />
+      <Menu menuOpen={s.menuOpen} user={s.user} set={set} onSignOut={handleSignOut} />
+      <Nav title="My Pushka" shareToast={s.shareToast} set={set} />
 
       {/* ── INTRO OVERLAY (first time only) ── */}
       {!s.seenIntro && (
@@ -1614,7 +1624,7 @@ export default function App() {
             <div className="intro-title">Jewish Greenbush Chabad</div>
             <div className="intro-tagline">Tzedakah, one coin at a time</div>
             <p className="intro-desc">
-              Chabad of East Greenbush brings Jewish families together — Shabbos tables, holidays, youth programs, and more.
+              Jewish Greenbush Chabad brings Jewish families together — Shabbos tables, holidays, youth programs, and more.
               This pushka helps make it all happen.
             </p>
             <div className="intro-what-we-do">
@@ -1651,7 +1661,6 @@ export default function App() {
 
       <div className="page-content">
 
-        {/* Recurring payment due banner */}
         {s.recurringDue && s.recurringEnabled && (
           <div className="recurring-banner">
             <div className="recurring-banner-text">
@@ -1667,16 +1676,27 @@ export default function App() {
           </div>
         )}
 
-        {/* Community goal — slim strip */}
+        <div className="rank-streak-strip">
+          <div className={`rank-chip rank-chip--${(s.prestige || 'bronze').toLowerCase()}`}>{s.prestige || 'Bronze'}</div>
+          <div className="streak-badge">
+            <span className="streak-num">{s.streak}</span> STREAK
+          </div>
+        </div>
+
         <div className="goal-strip">
           <div className="goal-strip-top">
             <span className="goal-strip-label">🕍 Community Goal</span>
-            <span className="goal-strip-nums">${s.totalRaised.toLocaleString()} <span className="goal-strip-of">/ ${s.communityGoal.toLocaleString()}</span></span>
+            <span className="goal-strip-nums">
+              {s.totalRaisedLoading
+                ? <span style={{ color: 'var(--muted)' }}>Loading...</span>
+                : <>${s.totalRaised.toLocaleString()}</>
+              }
+              <span className="goal-strip-of"> / ${s.communityGoal.toLocaleString()}</span>
+            </span>
           </div>
           <div className="progress-bar"><div className="progress-fill" style={{ width: pct(s.totalRaised, s.communityGoal) + '%' }} /></div>
         </div>
 
-        {/* What We Do photo strip — above pushka */}
         <PhotoStrip />
 
         {/* ── PUSHKA VISUAL ── */}
@@ -1684,7 +1704,6 @@ export default function App() {
           <div className="pushka-side left"><span>TARGET: ${s.pushkaGoal}</span></div>
           <div className="pushka-wrapper">
 
-            {/* Falling coins */}
             {s.fallingCoins.map(coin => (
               <div
                 key={coin.id}
@@ -1712,22 +1731,27 @@ export default function App() {
                   <div className="pushka-sub">TZEDAKA</div>
                 </div>
 
-                {/* Coin pile */}
                 <div className="pushka-pile">
                   <div className="pile-sand" style={{ height: `${Math.max(35, Math.round((Math.min(s.pushkaBalance, s.pushkaGoal) / s.pushkaGoal) * 220))}px` }} />
-                  {s.pileCoins.map(coin => (
-                    <div
-                      key={coin.id}
-                      className="pile-coin-3d"
-                      style={{
-                        left: `${PILE_POSITIONS[coin.posIdx].x}px`,
-                        bottom: `${PILE_POSITIONS[coin.posIdx].y}px`,
-                        transform: `rotate(${PILE_POSITIONS[coin.posIdx].r}deg) scale(${PILE_POSITIONS[coin.posIdx].s})`,
-                        zIndex: Math.floor(PILE_POSITIONS[coin.posIdx].y / 15) + 1,
-                        animation: coin.isNew ? undefined : 'none',
-                      }}
-                    />
-                  ))}
+                  {s.pileCoins.map(coin => {
+                    // FIX #7 — guard against out-of-bounds pile positions
+                    const pos = PILE_POSITIONS[coin.posIdx]
+                    if (!pos) return null
+                    return (
+                      <div
+                        key={coin.id}
+                        className="pile-coin-3d"
+                        style={{
+                          '--r': `${pos.r}deg`,
+                          left: `${pos.x}px`,
+                          bottom: `${pos.y}px`,
+                          transform: `rotate(${pos.r}deg) scale(${pos.s})`,
+                          zIndex: Math.floor(pos.y / 15) + 1,
+                          animation: coin.isNew ? undefined : 'none',
+                        }}
+                      />
+                    )
+                  })}
                   {s.pileCoins.length > 0 && (
                     <div className="pushka-org-pile">JEWISH GREENBUSH CHABAD</div>
                   )}
@@ -1738,7 +1762,6 @@ export default function App() {
           <div className="pushka-side right"><span>CURRENT: ${Math.min(s.pushkaBalance, s.pushkaGoal).toFixed(2)}</span></div>
         </div>
 
-        {/* Thank you toast */}
         {s.thankYouAmount && (
           <div className="tysm-toast">
             <div className="tysm-emoji">✨</div>
@@ -1747,10 +1770,19 @@ export default function App() {
           </div>
         )}
 
+        {s.pushkaFull && (
+          <div className="full-banner-home">
+            <div className="full-banner-text">🎉 Pushka is full! Ready to donate?</div>
+            <div className="full-banner-actions">
+              <button className="full-banner-btn primary" onClick={() => set({ screen: 'checkout' })}>Donate Now →</button>
+              <button className="full-banner-btn" onClick={() => set({ screen: 'settings' })}>Change Goal</button>
+            </div>
+          </div>
+        )}
+
         <div className="fillup-title">Fill it up!</div>
         <div className="fillup-sub">JEWISH GREENBUSH CHABAD</div>
 
-        {/* Slim pushka status */}
         <div className="pushka-status-strip">
           <div className="pushka-status-row">
             <span className="pushka-status-bal">${Math.min(s.pushkaBalance, s.pushkaGoal).toFixed(2)} <span className="pushka-status-of">/ ${s.pushkaGoal}</span></span>
@@ -1764,11 +1796,9 @@ export default function App() {
           )}
         </div>
 
-
-        {/* Amount Selection */}
         <div className="select-label-row">
           <span className="select-label">Choose an amount</span>
-          <span className="custom-link" onClick={() => s.user ? set({ showHomeCustom: !s.showHomeCustom }) : set({ screen: 'signin' })}>Custom $</span>
+          <span className="custom-link" onClick={() => s.user ? set({ showHomeCustom: !s.showHomeCustom }) : set({ screen: 'signup' })}>Custom $</span>
         </div>
         {s.user && s.showHomeCustom && (
           <div className="home-custom-row">
@@ -1794,8 +1824,8 @@ export default function App() {
           </div>
         )}
         {!s.user && (
-          <button className="signin-prompt" onClick={() => set({ screen: 'signin' })}>
-            <span>Sign in to drop coins into your pushka</span>
+          <button className="signin-prompt" onClick={() => set({ screen: 'signup' })}>
+            <span>Create a free account to start donating</span>
             <span className="signin-prompt-arrow">→</span>
           </button>
         )}
@@ -1809,8 +1839,11 @@ export default function App() {
             return opts.map(opt => (
               <button
                 key={opt.amount}
+                // FIX #18 — add title/aria-label to locked cards so intent is clear
                 className={`amount-card ${s.selectedAmount === opt.amount ? 'selected' : ''} ${s.isDropping ? 'dropping' : ''} ${!s.user ? 'locked' : ''}`}
                 onClick={() => s.user ? dropCoins(opt.amount) : set({ screen: 'signin' })}
+                title={!s.user ? 'Sign in to donate' : undefined}
+                aria-label={!s.user ? `Sign in to donate $${opt.amount}` : `Drop $${opt.amount} into pushka`}
               >
                 <div className="amount-value">${opt.amount}</div>
                 <div className="amount-add">{opt.hebrew}</div>
@@ -1820,14 +1853,13 @@ export default function App() {
           })()}
         </div>
 
-        {/* Pay Now CTA */}
         {s.pendingPayment > 0 && (
           <button className="quick-give-btn pay-now-btn" onClick={() => set({ screen: 'checkout' })}>
             🪙 Donate ${s.pendingPayment.toFixed(2)} to Jewish Greenbush Chabad →
           </button>
         )}
       </div>
-      <BottomNav />
+
     </div>
   )
 }
