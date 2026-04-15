@@ -533,7 +533,8 @@ export default function App() {
       lastRecurringDate: data.last_recurring_date,
       ...getPrestige(Number(data.total_personal) || 0),
     }
-    localStorage.setItem('pushka_state', JSON.stringify(loaded))
+    const existing = loadSaved()
+    localStorage.setItem('pushka_state', JSON.stringify({ ...existing, ...loaded }))
     setS(prev => ({ ...prev, ...loaded }))
     if (loaded.recurringEnabled && isRecurringDue(loaded.recurringFrequency, loaded.lastRecurringDate)) {
       setS(prev => ({ ...prev, recurringDue: true }))
