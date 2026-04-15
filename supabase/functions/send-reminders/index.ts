@@ -6,14 +6,14 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-function shouldSendNow(reminderFrequency: string): boolean {
-  // Send at 2pm Eastern (18:00 UTC in EDT / 19:00 UTC in EST)
+function shouldSendNow(reminderTimeUtc: string, reminderFrequency: string): boolean {
   const now = new Date();
+  const [hh, mm] = (reminderTimeUtc || '18:00').split(':').map(Number);
   const utcHour = now.getUTCHours();
   const utcMin = now.getUTCMinutes();
 
-  // Match 18:00 UTC (2pm EDT) within a 2-minute window
-  if (utcHour !== 18 || utcMin > 2) return false;
+  if (utcHour !== hh) return false;
+  if (Math.abs(utcMin - mm) > 1) return false;
 
   const day = now.getUTCDay();
   if (reminderFrequency === 'daily') return true;
@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     const errors: string[] = [];
 
     for (const row of rows) {
-      if (!shouldSendNow(row.reminder_frequency)) continue;
+      if (!shouldSendNow(row.reminder_time, row.reminder_frequency)) continue;
 
       const { data: userData } = await supabase.auth.admin.getUserById(row.user_id);
       const email = userData?.user?.email;
