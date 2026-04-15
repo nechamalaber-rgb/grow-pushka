@@ -492,7 +492,12 @@ export default function App() {
         auto_pay_enabled: snap.autoPayEnabled,
         auto_pay_threshold: snap.autoPayThreshold,
         reminder_enabled: snap.reminderEnabled,
-        reminder_time: snap.reminderTime,
+        reminder_time: (() => {
+          // Convert local reminder time to UTC for server-side cron comparison
+          const [hh, mm] = (snap.reminderTime || '09:00').split(':').map(Number)
+          const d = new Date(); d.setHours(hh, mm, 0, 0)
+          return `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`
+        })(),
         reminder_frequency: snap.reminderFrequency,
         recurring_enabled: snap.recurringEnabled,
         recurring_amount: snap.recurringAmount,
@@ -1497,6 +1502,21 @@ export default function App() {
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="glass-card settings-card" style={{ borderColor: 'rgba(239,68,68,0.2)' }}>
+          <div className="settings-section-title">🗑️ Reset Pushka</div>
+          <p className="settings-desc">Empty your pushka and start fresh. This clears your balance and coins but keeps your donation history.</p>
+          <button
+            className="settings-chip"
+            style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', marginTop: 8, width: '100%', padding: '12px', justifyContent: 'center' }}
+            onClick={() => {
+              if (!window.confirm('Empty your pushka? Your balance and coins will be cleared.')) return
+              set({ pushkaBalance: 0, pileCoins: [], pendingPayment: 0 })
+            }}
+          >
+            Empty Pushka
+          </button>
         </div>
 
       </div>
