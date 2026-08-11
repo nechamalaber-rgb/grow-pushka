@@ -29,17 +29,17 @@ const SLIDES = [
 ]
 
 const ACTIVITY_DATA = [
-  { src: '/slides/slide3.jpg',  emoji: '📚', label: 'Sponsor a Class',             sub: '$180 · Jewish Grow Retreat' },
-  { src: '/slides/pesach3.jpg', emoji: '🍽️', label: 'Sponsor a Small Meal',       sub: '$360 · Shabbos & holiday meals' },
-  { src: '/slides/slide5.jpg',  emoji: '🔥', label: 'Shabbaton Scholarship',       sub: '$540 · Send a girl to Shabbaton' },
-  { src: '/slides/slide6.jpg',  emoji: '🌸', label: "Women's Retreat Scholarship", sub: "$770 · Women's retreat scholarship" },
-  { src: '/slides/pesach2.jpg', emoji: '🍷', label: 'Yom Tov Meal',               sub: '$1,200 · Full Yom Tov celebration' },
-  { src: '/slides/slide2.jpg',  emoji: '✡️', label: 'Girls Retreat Scholarship',   sub: '$1,800 · Jewish girls retreat' },
-  { src: '/slides/slide3.jpg',  emoji: '😄', label: 'GROW Girls',                  sub: 'Girls thriving together' },
-  { src: '/slides/slide1.jpg',  emoji: '❤️', label: 'Girls Unite',                 sub: 'The Chabad community' },
-  { src: '/slides/pesach6.jpg', emoji: '🌿', label: 'Outdoors Together',           sub: 'Nature & fresh air' },
-  { src: '/slides/slide4.jpg',  emoji: '🎉', label: 'Chabad Team',                 sub: 'Growing together' },
-  { src: '/slides/slide7.jpg',  emoji: '🕯️', label: 'Havdalah Night',             sub: 'Jewish light & warmth' },
+  { src: '/slides/slide3.jpg',  label: 'Sponsor a Class',             sub: '$180 · Jewish Grow Retreat' },
+  { src: '/slides/pesach3.jpg', label: 'Sponsor a Small Meal',       sub: '$360 · Shabbos & holiday meals' },
+  { src: '/slides/slide5.jpg',  label: 'Shabbaton Scholarship',       sub: '$540 · Send a girl to Shabbaton' },
+  { src: '/slides/slide6.jpg',  label: "Women's Retreat Scholarship", sub: "$770 · Women's retreat scholarship" },
+  { src: '/slides/pesach2.jpg', label: 'Yom Tov Meal',               sub: '$1,200 · Full Yom Tov celebration' },
+  { src: '/slides/slide2.jpg',  label: 'Girls Retreat Scholarship',   sub: '$1,800 · Jewish girls retreat' },
+  { src: '/slides/slide3.jpg',  label: 'GROW Girls',                  sub: 'Girls thriving together' },
+  { src: '/slides/slide1.jpg',  label: 'Girls Unite',                 sub: 'The Chabad community' },
+  { src: '/slides/pesach6.jpg', label: 'Outdoors Together',           sub: 'Nature & fresh air' },
+  { src: '/slides/slide4.jpg',  label: 'Chabad Team',                 sub: 'Growing together' },
+  { src: '/slides/slide7.jpg',  label: 'Havdalah Night',             sub: 'Jewish light & warmth' },
 ]
 
 const COIN_MESSAGES = [
@@ -74,7 +74,6 @@ function PhotoStrip() {
               onError={e => { e.target.style.display = 'none' }}
             />
             <div className="photo-strip-caption-block">
-              <span className="photo-strip-emoji">{item.emoji}</span>
               <span className="photo-strip-caption">{item.label}</span>
               <span className="photo-strip-caption-sub">{item.sub}</span>
             </div>

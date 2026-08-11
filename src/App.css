@@ -974,10 +974,6 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   background: #fff;
   gap: 2px;
 }
-.photo-strip-emoji {
-  font-size: 18px;
-  line-height: 1;
-}
 .photo-strip-caption {
   font-size: 11px;
   font-weight: 800;
@@ -2599,7 +2595,6 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   .photo-strip-card { flex: 0 0 110px; }
   .photo-strip-img { width: 110px; height: 72px; }
   .photo-strip-caption { font-size: 11px; }
-  .photo-strip-emoji { font-size: 17px; }
   .streak-badge { padding: 5px 8px; font-size: 9px; }
   .rank-chip { font-size: 8px; padding: 3px 7px; }
   .card-title { font-size: 15px; }
