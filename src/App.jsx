@@ -2311,11 +2311,23 @@ export default function App() {
                 <div className="pushka-slot-base">
                   <div className="pushka-slot-hole" />
                 </div>
+                <div className="pushka-resting-coin" />
               </div>
 
               <div className="pushka-body">
+                <div className="pushka-side-text pushka-side-text-left">כל הפותח יד</div>
+                <div className="pushka-side-text pushka-side-text-right">
+                  <span className="pushka-side-text-name">JEWISH GREENBUSH CHABAD</span>
+                  <span className="pushka-side-text-tag">Tzedakah &middot; One Coin at a Time</span>
+                </div>
+
                 <div className="pushka-inner">
-                  <div className="pushka-hebrew">צדקה</div>
+                  <div className="pushka-hebrew-stack">
+                    <span className="pushka-hebrew-letter letter-1">צ</span>
+                    <span className="pushka-hebrew-letter letter-2">ד</span>
+                    <span className="pushka-hebrew-letter letter-3">ק</span>
+                    <span className="pushka-hebrew-letter letter-4">ה</span>
+                  </div>
                   <div className="pushka-sub">TZEDAKA</div>
                   {s.pushkaDedication && (
                     <div className="pushka-dedication">{s.pushkaDedication}</div>
@@ -2356,9 +2368,6 @@ export default function App() {
                       </div>
                     )
                   })}
-                  {s.pileCoins.length > 0 && (
-                    <div className="pushka-org-pile">JEWISH GREENBUSH CHABAD</div>
-                  )}
                 </div>
               </div>
             </div>

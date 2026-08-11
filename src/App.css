@@ -391,22 +391,90 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding-top: 18px;
+  padding-top: 14px;
   flex-shrink: 0;
 }
-.pushka-hebrew {
-  font-size: 58px;
+.pushka-hebrew-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.82;
+}
+.pushka-hebrew-letter {
+  font-size: 34px;
   font-weight: 700;
   font-family: 'Cormorant Garamond', serif;
-  color: var(--teal);
-  line-height: 1;
 }
+.pushka-hebrew-letter.letter-1 { color: #2d5fd4; }
+.pushka-hebrew-letter.letter-2 { color: #3a9350; }
+.pushka-hebrew-letter.letter-3 { color: var(--gold); }
+.pushka-hebrew-letter.letter-4 { color: #d1552f; }
 .pushka-sub {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 5px;
   color: var(--teal-light);
   opacity: 0.7;
+  margin-top: 4px;
+}
+
+/* ── SIDE TEXT (Colel Chabad-style vertical labels) ── */
+.pushka-side-text {
+  position: absolute;
+  top: 16px;
+  bottom: 40px;
+  writing-mode: vertical-rl;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+.pushka-side-text-left {
+  left: 8px;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: rgba(30,80,104,0.45);
+  justify-content: center;
+}
+.pushka-side-text-right {
+  right: 17px;
+  bottom: 130px;
+  justify-content: space-between;
+  gap: 6px;
+}
+.pushka-side-text-name {
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: rgba(30,80,104,0.55);
+  text-transform: uppercase;
+}
+.pushka-side-text-tag {
+  font-size: 6.5px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: rgba(30,80,104,0.4);
+  font-style: italic;
+}
+
+/* ── RESTING COIN on the slot ── */
+.pushka-resting-coin {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-8deg);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 38% 32%,
+    #fffff0 0%, #ffe878 14%, #ffd030 30%,
+    #d4920a 54%, #a06010 76%, #6a3c06 100%);
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.35),
+    inset 0 2px 4px rgba(255,255,255,0.7),
+    inset 0 -2px 4px rgba(0,0,0,0.25);
+  z-index: 5;
 }
 
 /* ── COIN PILE ── */
@@ -512,24 +580,24 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 /* ── PROGRESS MILESTONE MARKERS (25/50/75%) ── */
 .pushka-milestone {
   position: absolute;
-  right: 6px;
+  right: 1px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   z-index: 6;
   pointer-events: none;
 }
 .pushka-milestone-line {
-  width: 14px;
+  width: 8px;
   height: 2px;
   border-radius: 2px;
   background: rgba(120,130,145,0.35);
   transition: background 0.4s ease, box-shadow 0.4s ease;
 }
 .pushka-milestone-label {
-  font-size: 7px;
+  font-size: 6px;
   font-weight: 800;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   color: rgba(120,130,145,0.5);
   font-family: 'Inter', sans-serif;
   transition: color 0.4s ease;
@@ -576,7 +644,6 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 .pushka-container.theme-silver .pushka-slot-base {
   background: linear-gradient(180deg, #eef1f5 0%, #b8c0cc 50%, #7d8694 100%);
 }
-.pushka-container.theme-silver .pushka-hebrew,
 .pushka-container.theme-silver .pushka-dedication { color: #3a4452; }
 .pushka-container.theme-silver .pushka-sub { color: #6b7686; }
 
@@ -597,7 +664,6 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 .pushka-container.theme-brass .pushka-slot-base {
   background: linear-gradient(180deg, #f7dc8a 0%, #c8922a 50%, #8a611a 100%);
 }
-.pushka-container.theme-brass .pushka-hebrew,
 .pushka-container.theme-brass .pushka-dedication { color: #4a3308; }
 .pushka-container.theme-brass .pushka-sub { color: #6b4c12; }
 
@@ -621,7 +687,6 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 .pushka-container.theme-wood .pushka-slot-base {
   background: linear-gradient(180deg, #c08a4f 0%, #8f5c30 50%, #593518 100%);
 }
-.pushka-container.theme-wood .pushka-hebrew { color: #F5EDD8; }
 .pushka-container.theme-wood .pushka-sub,
 .pushka-container.theme-wood .pushka-dedication { color: #f0dfc0; opacity: 0.85; }
 
@@ -640,7 +705,6 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 .pushka-container.theme-matte-navy .pushka-slot-base {
   background: linear-gradient(180deg, #2a3a5c 0%, #16233f 50%, #0a1226 100%);
 }
-.pushka-container.theme-matte-navy .pushka-hebrew { color: var(--gold-light); }
 .pushka-container.theme-matte-navy .pushka-sub,
 .pushka-container.theme-matte-navy .pushka-dedication { color: rgba(212,168,67,0.75); }
 
@@ -659,31 +723,8 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 .pushka-container.theme-matte-sage .pushka-slot-base {
   background: linear-gradient(180deg, #7c9a70 0%, #55704f 50%, #33461f 100%);
 }
-.pushka-container.theme-matte-sage .pushka-hebrew { color: #F5EDD8; }
 .pushka-container.theme-matte-sage .pushka-sub,
 .pushka-container.theme-matte-sage .pushka-dedication { color: #e2ecd8; opacity: 0.8; }
-.pushka-org-pile {
-  position: absolute;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 160px;
-  padding: 0 6px;
-  font-size: 7px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  color: rgba(30,80,104,0.55);
-  text-align: center;
-  text-transform: uppercase;
-  text-shadow: 0 1px 2px rgba(255,255,255,0.6);
-  z-index: 30;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  box-sizing: border-box;
-  pointer-events: none;
-}
 
 /* ── FILL IT UP TITLE ── */
 .fillup-title {
@@ -2571,7 +2612,7 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   .pushka-body { width: 185px; height: 330px; }
   .pushka-slot-base { width: 185px; }
   .pushka-heap { width: 185px; }
-  .pushka-hebrew { font-size: 72px; }
+  .pushka-hebrew-letter { font-size: 40px; }
   .fillup-title { font-size: 30px; }
   .photo-strip-card { flex: 0 0 150px; }
   .photo-strip-img { width: 150px; height: 100px; }
@@ -2588,7 +2629,7 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   .pushka-body { width: 185px; height: 330px; }
   .pushka-slot-base { width: 185px; }
   .pushka-heap { width: 185px; }
-  .pushka-hebrew { font-size: 48px; }
+  .pushka-hebrew-letter { font-size: 28px; }
   .pushka-side { font-size: 9px; max-width: 42px; }
   .stat-big { font-size: 20px; }
   .stat-muted { font-size: 15px; }
@@ -2612,7 +2653,7 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   .pushka-body { width: 165px; height: 310px; }
   .pushka-slot-base { width: 165px; }
   .pushka-heap { width: 165px; }
-  .pushka-hebrew { font-size: 40px; }
+  .pushka-hebrew-letter { font-size: 24px; }
   .pushka-side { display: none; }
   .stat-big { font-size: 18px; }
   .fillup-title { font-size: 19px; }
