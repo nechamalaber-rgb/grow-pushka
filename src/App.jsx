@@ -145,7 +145,7 @@ function mulberry32(seed) {
 // variance so the pile reads as naturally tossed-in rather than a grid.
 function buildOrganicPilePositions() {
   const rng = mulberry32(20260810)
-  const rowHeight = 16
+  const rowHeight = 24
   const cols = [0, 27, 55, 83, 111, 138]
   // Precompute a small stable x/rotation/scale jitter per (column, row-in-column)
   // slot up front, then assign coins to columns round-robin (always filling
