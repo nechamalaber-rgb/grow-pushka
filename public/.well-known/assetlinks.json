@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "buildbitachon.org",
+    "sha256_cert_fingerprints": [
+      "9B:C9:42:A4:CB:31:2D:95:31:D4:10:BC:CD:A2:F2:9D:07:16:FA:A5:EB:5D:02:BB:77:5D:BD:59:1B:05:0F:88"
+    ]
+  }
+}]

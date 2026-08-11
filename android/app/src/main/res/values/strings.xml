@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Grow Pushka</string>
+    <string name="title_activity_main">Grow Pushka</string>
+    <string name="package_name">com.jewishgreenbush.growpushka</string>
+    <string name="custom_url_scheme">com.jewishgreenbush.growpushka</string>
+</resources>

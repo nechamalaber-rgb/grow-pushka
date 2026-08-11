@@ -1,0 +1,26 @@
+{
+  "name": "My Pushka — Jewish Greenbush Chabad",
+  "short_name": "My Pushka",
+  "description": "Fill your pushka and support Jewish Greenbush Chabad — tzedakah one coin at a time.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1629",
+  "theme_color": "#0f1629",
+  "orientation": "portrait",
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/pushka-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pushka-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
