@@ -1422,7 +1422,7 @@ export default function App() {
 
         {s.pushkaBalance >= s.pushkaGoal && (
           <div className="full-banner">
-            <div>🎉 Your pushka is full with ${s.pushkaBalance.toFixed(2)}!</div>
+            <div>Your pushka is full with ${s.pushkaBalance.toFixed(2)}!</div>
             <button className="full-banner-change" onClick={() => set({ screen: 'settings' })}>Change Goal instead →</button>
           </div>
         )}
@@ -2223,7 +2223,7 @@ export default function App() {
             const goalReached = remaining <= 0
             const urgent = !goalReached && daysLeft <= 5
             const message = goalReached
-              ? <>🎉 Goal reached!</>
+              ? <>Goal reached!</>
               : daysLeft <= 0
                 ? <><ClockIcon size={13} /> Final day &middot; ${remaining.toFixed(0)} to go</>
                 : <>{urgent ? <FireIcon size={13} /> : <CalendarIcon size={13} />} {daysLeft}d left &middot; ${remaining.toFixed(0)} to go</>
@@ -2382,7 +2382,7 @@ export default function App() {
 
         {s.pushkaBalance >= s.pushkaGoal && (
           <div className="full-banner-home">
-            <div className="full-banner-text">🎉 Pushka is full! Ready to donate?</div>
+            <div className="full-banner-text">Pushka is full! Ready to donate?</div>
             <div className="full-banner-actions">
               <button className="full-banner-btn primary" onClick={() => set({ screen: 'checkout' })}>Donate Now →</button>
               <button className="full-banner-btn" onClick={() => set({ screen: 'settings' })}>Change Goal</button>
