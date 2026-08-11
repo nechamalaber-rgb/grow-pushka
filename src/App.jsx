@@ -493,35 +493,6 @@ function Nav({ title, shareToast, set, prestige, streak, prestigeNext, prestigeA
   )
 }
 
-// FIX #24 — wrap with .bottom-nav-wrap so position: fixed takes effect
-function BottomNav({ screen, user, set }) {
-  return (
-    <div className="bottom-nav-wrap">
-      <div className="bottom-nav">
-        <button className={`bottom-nav-item ${screen === 'home' ? 'active' : ''}`} onClick={() => set({ screen: 'home' })}>
-          <span className="bottom-nav-label">Pushka</span>
-        </button>
-        <button className={`bottom-nav-item ${screen === 'checkout' ? 'active' : ''}`} onClick={() => set({ screen: 'checkout' })}>
-          <span className="bottom-nav-label">Pay</span>
-        </button>
-        <button className={`bottom-nav-item ${screen === 'history' ? 'active' : ''}`} onClick={() => set({ screen: 'history' })}>
-          <span className="bottom-nav-label">History</span>
-        </button>
-        {user ? (
-          <button className={`bottom-nav-item ${screen === 'settings' ? 'active' : ''}`} onClick={() => set({ screen: 'settings' })}>
-            <span className="bottom-nav-label">Settings</span>
-          </button>
-        ) : (
-          <button className={`bottom-nav-item ${screen === 'signin' ? 'active' : ''}`} onClick={() => set({ screen: 'signin' })}>
-            <span className="bottom-nav-icon"><SparkleIcon size={16} /></span>
-            <span className="bottom-nav-label">Sign In</span>
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
-
 function FaqItem({ q, a }) {
   const [open, setOpen] = useState(false)
   return (
@@ -1383,7 +1354,6 @@ export default function App() {
           Didn't get it? <span>Resend email</span>
         </button>
       </div>
-      <BottomNav screen={s.screen} user={s.user} set={set} />
     </div>
   )
 
@@ -1413,7 +1383,6 @@ export default function App() {
           Back to Pushka
         </button>
       </div>
-      <BottomNav screen={s.screen} user={s.user} set={set} />
     </div>
   )
 
@@ -1439,8 +1408,6 @@ export default function App() {
           ))}
         </div>
       </div>
-      {/* FIX #20 — BottomNav was missing from History screen */}
-      <BottomNav screen={s.screen} user={s.user} set={set} />
     </div>
   )
 
@@ -1618,7 +1585,6 @@ export default function App() {
           {faqs.map((faq, i) => <FaqItem key={i} q={faq.q} a={faq.a} />)}
           <button className="settings-chip signout-chip" onClick={() => set({ screen: 'home' })} style={{ width: '100%', marginTop: 8 }}>Back to Pushka</button>
         </div>
-        <BottomNav screen={s.screen} user={s.user} set={set} />
       </div>
     )
   }
@@ -2014,7 +1980,6 @@ export default function App() {
         )}
 
       </div>
-      <BottomNav screen={s.screen} user={s.user} set={set} />
     </div>
   )
 
