@@ -66,7 +66,7 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   transition: all 0.2s;
 }
 .nav-btn:hover { background: rgba(30,80,104,0.14); }
-.hamburger { font-size: 14px; }
+.nav-btn-icon { padding: 9px; justify-content: center; }
 .nav-title {
   color: var(--text);
   font-size: clamp(12px, 3.5vw, 17px);
@@ -1630,7 +1630,7 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   transition: all 0.15s;
 }
 .menu-item:hover { background: var(--teal-pale); color: var(--teal); }
-.menu-item-icon { font-size: 20px; width: 28px; }
+.menu-item-icon { width: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
 /* ── BOTTOM NAV ── */
 .bottom-nav-wrap {

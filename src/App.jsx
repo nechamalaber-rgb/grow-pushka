@@ -346,12 +346,32 @@ const isRecurringDue = (frequency, lastDate) => {
 
 // FIX #13 — Menu/Nav/BottomNav defined outside App to prevent remount on every render
 
+// ── minimal line-icon set (replaces emoji-as-icons throughout the nav/menu) ──
+const Icon = ({ children, size = 18, ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    {children}
+  </svg>
+)
+const MenuIcon = p => <Icon {...p}><line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="17" x2="20" y2="17" /></Icon>
+const ShareIcon = p => <Icon {...p}><path d="M12 16V4" /><path d="M7 8l5-5 5 5" /><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" /></Icon>
+const CoinIcon = p => <Icon {...p}><circle cx="12" cy="12" r="8.5" /><path d="M12 8v8M9.5 9.5a2.2 2.2 0 0 1 2.5-1.5c1.4 0 2.4.7 2.4 1.8s-1 1.5-2.4 1.7c-1.5.2-2.5.7-2.5 1.9 0 1.1 1 1.8 2.4 1.8a2.2 2.2 0 0 0 2.5-1.5" /></Icon>
+const CardIcon = p => <Icon {...p}><rect x="3" y="6" width="18" height="13" rx="2" /><line x1="3" y1="10.5" x2="21" y2="10.5" /><line x1="6.5" y1="14.5" x2="10" y2="14.5" /></Icon>
+const ClockIcon = p => <Icon {...p}><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></Icon>
+const QuestionIcon = p => <Icon {...p}><circle cx="12" cy="12" r="8.5" /><path d="M9.5 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.3 2-2.3 3.5" /><circle cx="12" cy="16.7" r="0.4" fill="currentColor" stroke="none" /></Icon>
+const GearIcon = p => <Icon {...p}><circle cx="12" cy="12" r="3" /><path d="M19.4 13.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H4.5a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V4.5a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></Icon>
+const ShieldIcon = p => <Icon {...p}><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" /></Icon>
+const LogoutIcon = p => <Icon {...p}><path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3" /><path d="M16 17l5-5-5-5" /><line x1="21" y1="12" x2="9" y2="12" /></Icon>
+const SparkleIcon = p => <Icon {...p}><path d="M12 4l1.6 4.9L18.5 10.5l-4.9 1.6L12 17l-1.6-4.9L5.5 10.5l4.9-1.6z" /></Icon>
+const UserIcon = p => <Icon {...p}><circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></Icon>
+const FireIcon = p => <Icon {...p}><path d="M12 3c1 3-2.5 4-2.5 7a2.5 2.5 0 0 0 5 0c0-1-.5-1.5-.5-1.5 1.5 1 2.5 2.8 2.5 4.5a5 5 0 0 1-10 0C6.5 9 9 7.5 12 3z" /></Icon>
+const CalendarIcon = p => <Icon {...p}><rect x="3.5" y="5" width="17" height="15" rx="2" /><line x1="3.5" y1="9.5" x2="20.5" y2="9.5" /><line x1="8" y1="3" x2="8" y2="7" /><line x1="16" y1="3" x2="16" y2="7" /></Icon>
+
 function Menu({ menuOpen, user, set, onSignOut }) {
   return (
     <div className={`menu-overlay ${menuOpen ? 'open' : ''}`} onClick={() => set({ menuOpen: false })}>
       <div className="menu-panel" onClick={e => e.stopPropagation()}>
         <div className="menu-header">
-          <div className="menu-avatar">{user ? '👤' : '🪙'}</div>
+          <div className="menu-avatar">{user ? <UserIcon size={20} /> : <CoinIcon size={20} />}</div>
           <div>
             <div className="menu-app-name">GROW Pushka</div>
             <div className="menu-mode">
@@ -361,12 +381,12 @@ function Menu({ menuOpen, user, set, onSignOut }) {
           <button className="menu-close" onClick={() => set({ menuOpen: false })}>✕</button>
         </div>
         {[
-          { icon: '🪙', label: 'My Pushka', screen: 'home' },
-          { icon: '💳', label: 'Pay Now', screen: 'checkout' },
-          { icon: '🕐', label: 'History', screen: 'history' },
-          { icon: '❓', label: 'FAQ', screen: 'faq' },
-          { icon: '⚙️', label: 'Settings', screen: 'settings' },
-          ...(user?.email === 'adlaber@gmail.com' ? [{ icon: '🛡️', label: 'Admin', screen: 'admin' }] : []),
+          { icon: <CoinIcon size={18} />, label: 'My Pushka', screen: 'home' },
+          { icon: <CardIcon size={18} />, label: 'Pay Now', screen: 'checkout' },
+          { icon: <ClockIcon size={18} />, label: 'History', screen: 'history' },
+          { icon: <QuestionIcon size={18} />, label: 'FAQ', screen: 'faq' },
+          { icon: <GearIcon size={18} />, label: 'Settings', screen: 'settings' },
+          ...(user?.email === 'adlaber@gmail.com' ? [{ icon: <ShieldIcon size={18} />, label: 'Admin', screen: 'admin' }] : []),
         ].map(item => (
           <button key={item.label} className="menu-item" onClick={() => set({ screen: item.screen, menuOpen: false })}>
             <span className="menu-item-icon">{item.icon}</span>
@@ -376,12 +396,12 @@ function Menu({ menuOpen, user, set, onSignOut }) {
         <div className="menu-divider" />
         {user ? (
           <button className="menu-item menu-signout" onClick={onSignOut}>
-            <span className="menu-item-icon">🚪</span>
+            <span className="menu-item-icon"><LogoutIcon size={18} /></span>
             <span>Sign Out</span>
           </button>
         ) : (
           <button className="menu-item menu-signin-item" onClick={() => set({ screen: 'signin', menuOpen: false })}>
-            <span className="menu-item-icon">✨</span>
+            <span className="menu-item-icon"><SparkleIcon size={18} /></span>
             <span>Sign In / Sign Up</span>
           </button>
         )}
@@ -442,8 +462,8 @@ function Nav({ title, shareToast, set, prestige, streak, prestigeNext, prestigeA
   const isHome = title.includes('Pushka')
   return (
     <div className="nav">
-      <button className="nav-btn" onClick={() => set({ menuOpen: true })}>
-        <span className="hamburger">☰</span> MENU
+      <button className="nav-btn nav-btn-icon" onClick={() => set({ menuOpen: true })} aria-label="Menu">
+        <MenuIcon size={19} />
       </button>
       <div className="nav-title">{title}</div>
       <div className="nav-right">
@@ -452,13 +472,13 @@ function Nav({ title, shareToast, set, prestige, streak, prestigeNext, prestigeA
         )}
         <button className="nav-btn share-btn" onClick={async () => {
           try {
-            await navigator.share({ title: 'Jewish Greenbush Chabad Pushka', text: 'I found this amazing app where I track my tzedakah in a digital pushka! Join me in supporting Jewish Greenbush Chabad 🪙', url: window.location.href })
+            await navigator.share({ title: 'Jewish Greenbush Chabad Pushka', text: 'I found this amazing app where I track my tzedakah in a digital pushka! Join me in supporting Jewish Greenbush Chabad', url: window.location.href })
           } catch {
             await navigator.clipboard.writeText(window.location.href).catch(() => {})
             set({ shareToast: true })
             setTimeout(() => set({ shareToast: false }), 2000)
           }
-        }}>{shareToast ? '✓ Copied!' : '⬆ Share'}</button>
+        }}>{shareToast ? '✓ Copied!' : <><ShareIcon size={14} /> Share</>}</button>
       </div>
     </div>
   )
@@ -484,7 +504,7 @@ function BottomNav({ screen, user, set }) {
           </button>
         ) : (
           <button className={`bottom-nav-item ${screen === 'signin' ? 'active' : ''}`} onClick={() => set({ screen: 'signin' })}>
-            <span className="bottom-nav-icon">✨</span>
+            <span className="bottom-nav-icon"><SparkleIcon size={16} /></span>
             <span className="bottom-nav-label">Sign In</span>
           </button>
         )}
@@ -2229,13 +2249,13 @@ export default function App() {
             const goalReached = remaining <= 0
             const urgent = !goalReached && daysLeft <= 5
             const message = goalReached
-              ? '🎉 Goal reached!'
+              ? <>🎉 Goal reached!</>
               : daysLeft <= 0
-                ? `⏰ Final day · $${remaining.toFixed(0)} to go`
-                : `${urgent ? '🔥' : '📅'} ${daysLeft}d left · $${remaining.toFixed(0)} to go`
+                ? <><ClockIcon size={13} /> Final day &middot; ${remaining.toFixed(0)} to go</>
+                : <>{urgent ? <FireIcon size={13} /> : <CalendarIcon size={13} />} {daysLeft}d left &middot; ${remaining.toFixed(0)} to go</>
             return (
               <div style={{ marginTop: 5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: urgent ? '#ff8c69' : 'var(--gold)' }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: urgent ? '#ff8c69' : 'var(--gold)', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                   {message}
                 </span>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
