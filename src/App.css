@@ -1942,7 +1942,11 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   color: var(--text);
   font-family: 'Cormorant Garamond', serif;
   margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+.settings-section-title svg { flex-shrink: 0; }
 .settings-desc {
   font-size: 12px;
   color: var(--muted);

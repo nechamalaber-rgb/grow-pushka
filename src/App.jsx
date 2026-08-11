@@ -365,6 +365,15 @@ const SparkleIcon = p => <Icon {...p}><path d="M12 4l1.6 4.9L18.5 10.5l-4.9 1.6L
 const UserIcon = p => <Icon {...p}><circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></Icon>
 const FireIcon = p => <Icon {...p}><path d="M12 3c1 3-2.5 4-2.5 7a2.5 2.5 0 0 0 5 0c0-1-.5-1.5-.5-1.5 1.5 1 2.5 2.8 2.5 4.5a5 5 0 0 1-10 0C6.5 9 9 7.5 12 3z" /></Icon>
 const CalendarIcon = p => <Icon {...p}><rect x="3.5" y="5" width="17" height="15" rx="2" /><line x1="3.5" y1="9.5" x2="20.5" y2="9.5" /><line x1="8" y1="3" x2="8" y2="7" /><line x1="16" y1="3" x2="16" y2="7" /></Icon>
+const RefreshIcon = p => <Icon {...p}><path d="M4 12a8 8 0 0 1 14-5.3L21 9" /><path d="M21 4v5h-5" /><path d="M20 12a8 8 0 0 1-14 5.3L3 15" /><path d="M3 20v-5h5" /></Icon>
+const BellIcon = p => <Icon {...p}><path d="M12 4a5 5 0 0 0-5 5v3.5c0 1-.4 2-1.2 2.7L4.5 17h15l-1.3-1.8c-.8-.7-1.2-1.7-1.2-2.7V9a5 5 0 0 0-5-5z" /><path d="M10 20a2 2 0 0 0 4 0" /></Icon>
+const CandleFlameIcon = p => <Icon {...p}><rect x="9.5" y="12" width="5" height="8" rx="1" /><path d="M12 4c1.2 2 2.2 3.3 2.2 5a2.2 2.2 0 1 1-4.4 0c0-1.7 1-3 2.2-5z" /></Icon>
+const TargetIcon = p => <Icon {...p}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" /></Icon>
+const PaletteIcon = p => <Icon {...p}><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7h2a3.5 3.5 0 0 0 3.5-3.5c0-4.2-3.8-7.7-8.4-7.7z" /><circle cx="7.5" cy="10.5" r="1" fill="currentColor" stroke="none" /><circle cx="11" cy="7.5" r="1" fill="currentColor" stroke="none" /><circle cx="15.5" cy="8.5" r="1" fill="currentColor" stroke="none" /></Icon>
+const TrashIcon = p => <Icon {...p}><path d="M4 7h16" /><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></Icon>
+const DocumentIcon = p => <Icon {...p}><path d="M7 3h7l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" /><path d="M14 3v4h4" /><line x1="8.5" y1="12" x2="15.5" y2="12" /><line x1="8.5" y1="15.5" x2="15.5" y2="15.5" /></Icon>
+const LinkIcon = p => <Icon {...p}><path d="M9.5 14.5l5-5" /><path d="M11 6.5l1-1a3.5 3.5 0 0 1 5 5l-1 1" /><path d="M13 17.5l-1 1a3.5 3.5 0 0 1-5-5l1-1" /></Icon>
+const AlertTriangleIcon = p => <Icon {...p}><path d="M12 4.5l9 15.5H3z" /><line x1="12" y1="10" x2="12" y2="14.5" /><circle cx="12" cy="17.2" r="0.4" fill="currentColor" stroke="none" /></Icon>
 
 function Menu({ menuOpen, user, set, onSignOut }) {
   return (
@@ -1622,7 +1631,7 @@ export default function App() {
       <div className="page-content">
 
         <div className="glass-card settings-card">
-          <div className="settings-section-title">👤 Account</div>
+          <div className="settings-section-title"><UserIcon size={17} /> Account</div>
           {s.user ? (
             <>
               <div className="setting-row">
@@ -1647,7 +1656,7 @@ export default function App() {
         </div>
 
         <div className="glass-card settings-card">
-          <div className="settings-section-title">🔄 Recurring Donations</div>
+          <div className="settings-section-title"><RefreshIcon size={17} /> Recurring Donations</div>
           <p className="settings-desc">Automatically donate on a schedule — set it and forget it.</p>
 
           <div className="setting-row">
@@ -1704,7 +1713,7 @@ export default function App() {
         </div>
 
         <div className="glass-card settings-card">
-          <div className="settings-section-title">💳 Pay Reminder When Full</div>
+          <div className="settings-section-title"><CardIcon size={17} /> Pay Reminder When Full</div>
           <p className="settings-desc">When your pushka hits the target, we'll open the payment screen for you automatically.</p>
 
           <div className="setting-row">
@@ -1745,7 +1754,7 @@ export default function App() {
         </div>
 
         <div className="glass-card settings-card">
-          <div className="settings-section-title">🔔 Reminders</div>
+          <div className="settings-section-title"><BellIcon size={17} /> Reminders</div>
           <p className="settings-desc">Get a notification reminding you to drop coins into your pushka — no automatic charges, just a friendly nudge.</p>
           {s.reminderError && <div className="auth-error" style={{marginBottom:8}}>{s.reminderError}</div>}
 
@@ -1798,7 +1807,7 @@ export default function App() {
         </div>
 
         <div className="glass-card settings-card">
-          <div className="settings-section-title">🕯️ Yahrtzeit Reminders</div>
+          <div className="settings-section-title"><CandleFlameIcon size={17} /> Yahrtzeit Reminders</div>
           <p className="settings-desc">Add a loved one's name and Hebrew date — we'll send you a reminder to donate l'ilui nishmatan every year on their yahrtzeit.</p>
 
           {s.yahrtzeits.map(yz => (
@@ -1875,7 +1884,7 @@ export default function App() {
         </div>
 
         <div className="glass-card settings-card">
-          <div className="settings-section-title">🎯 Pushka Goal</div>
+          <div className="settings-section-title"><TargetIcon size={17} /> Pushka Goal</div>
           <p className="settings-desc">Set your personal target for this pushka.</p>
           <div className="setting-row" style={{ marginTop: 8 }}>
             <div className="setting-label">Goal amount</div>
@@ -1921,7 +1930,7 @@ export default function App() {
         </div>
 
         <div className="glass-card settings-card">
-          <div className="settings-section-title">🎨 Pushka Appearance</div>
+          <div className="settings-section-title"><PaletteIcon size={17} /> Pushka Appearance</div>
           <p className="settings-desc">Choose a material for your pushka.</p>
           <div className="pushka-theme-picker">
             {[
@@ -1957,7 +1966,7 @@ export default function App() {
         </div>
 
         <div className="glass-card settings-card" style={{ borderColor: 'rgba(239,68,68,0.2)' }}>
-          <div className="settings-section-title">🗑️ Reset Pushka</div>
+          <div className="settings-section-title"><TrashIcon size={17} /> Reset Pushka</div>
           <p className="settings-desc">Empty your pushka and start fresh. This clears your balance and coins but keeps your donation history.</p>
           <button
             className="settings-chip"
@@ -1972,14 +1981,14 @@ export default function App() {
         </div>
 
         <div className="glass-card settings-card">
-          <div className="settings-section-title">📋 Legal & Support</div>
+          <div className="settings-section-title"><DocumentIcon size={17} /> Legal &amp; Support</div>
           <a href="/privacy" target="_blank" rel="noreferrer" style={{ display: 'block', color: 'var(--gold)', padding: '10px 0', fontSize: 14, borderBottom: '1px solid var(--border)', textDecoration: 'none' }}>Privacy Policy →</a>
           <a href="/support" target="_blank" rel="noreferrer" style={{ display: 'block', color: 'var(--gold)', padding: '10px 0', fontSize: 14, textDecoration: 'none' }}>Support →</a>
         </div>
 
         {s.user && (
           <div className="glass-card settings-card" style={{ borderColor: 'rgba(239,68,68,0.2)' }}>
-            <div className="settings-section-title" style={{ color: '#f87171' }}>⚠️ Delete Account</div>
+            <div className="settings-section-title" style={{ color: '#f87171' }}><AlertTriangleIcon size={17} /> Delete Account</div>
             <p className="settings-desc">Permanently delete your account and all data. This cannot be undone.</p>
             <button
               className="settings-chip"
@@ -2049,7 +2058,7 @@ export default function App() {
           </div>
 
           <div className="glass-card settings-card">
-            <div className="settings-section-title">🎯 Community Goal</div>
+            <div className="settings-section-title"><TargetIcon size={17} /> Community Goal</div>
             <div className="setting-row">
               <span className="setting-label">Current Goal</span>
               <input
@@ -2073,7 +2082,7 @@ export default function App() {
           </div>
 
           <div className="glass-card settings-card">
-            <div className="settings-section-title">🔗 Dashboards</div>
+            <div className="settings-section-title"><LinkIcon size={17} /> Dashboards</div>
             {[
               { label: 'Stripe — View Payments', url: 'https://dashboard.stripe.com' },
               { label: 'Supabase — View Users', url: 'https://supabase.com/dashboard/project/lscundsuxujnhsclgssx' },
