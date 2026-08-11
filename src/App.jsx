@@ -145,28 +145,31 @@ function mulberry32(seed) {
 // variance so the pile reads as naturally tossed-in rather than a grid.
 function buildOrganicPilePositions() {
   const rng = mulberry32(20260810)
-  const positions = []
   const rowHeight = 16
   const cols = [4, 26, 50, 74, 98, 120]
-  let row = 0
-  while (positions.length < 66) {
-    // brick-lay alternate rows (like real stacked coins/shingles) instead of
-    // a strict repeating grid, with only *subtle* jitter on top — enough to
-    // avoid a mechanical look without collapsing into an overlapping mess
-    const stagger = row % 2 === 1 ? 11 : 0
-    const rowJitterY = (rng() - 0.5) * 3
-    cols.forEach(baseX => {
-      if (positions.length >= 66) return
-      const xJitter = (rng() - 0.5) * 5
-      const yJitter = (rng() - 0.5) * 3
-      positions.push({
-        x: Math.max(0, Math.min(134, baseX + stagger + xJitter)),
-        y: Math.round(30 + row * rowHeight + rowJitterY + yJitter),
-        r: Math.round((rng() - 0.5) * 22),
-        s: +(0.96 + rng() * 0.08).toFixed(2),
-      })
+  // Precompute a small stable x/rotation/scale jitter per (column, row-in-column)
+  // slot up front, then assign coins to columns round-robin (always filling
+  // whichever column is currently shortest) so the pile is provably level —
+  // no column can ever fall behind by more than one coin, at any fill count,
+  // instead of only being level at exact multiples of 6.
+  const heights = cols.map(() => 0)
+  const positions = []
+  for (let i = 0; i < 66; i++) {
+    let col = 0
+    for (let c = 1; c < cols.length; c++) {
+      if (heights[c] < heights[col]) col = c
+    }
+    const levelInCol = heights[col]
+    heights[col]++
+    const stagger = levelInCol % 2 === 1 ? 11 : 0
+    const xJitter = (rng() - 0.5) * 5
+    const yJitter = (rng() - 0.5) * 3
+    positions.push({
+      x: Math.max(0, Math.min(134, cols[col] + stagger + xJitter)),
+      y: Math.round(30 + levelInCol * rowHeight + yJitter),
+      r: Math.round((rng() - 0.5) * 22),
+      s: +(0.96 + rng() * 0.08).toFixed(2),
     })
-    row++
   }
   return positions
 }
