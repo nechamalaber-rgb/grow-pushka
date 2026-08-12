@@ -145,7 +145,7 @@ function mulberry32(seed) {
 function buildOrganicPilePositions() {
   const rng = mulberry32(20260810)
   const rowHeight = 26
-  const cols = [0, 30, 61, 91, 122, 152]
+  const cols = [0, 27, 55, 83, 111, 138]
   // Precompute a small stable x/rotation/scale jitter per (column, row-in-column)
   // slot up front, then assign coins to columns round-robin (always filling
   // whichever column is currently shortest) so the pile is provably level —
@@ -164,7 +164,7 @@ function buildOrganicPilePositions() {
     const xJitter = (rng() - 0.5) * 5
     const yJitter = (rng() - 0.5) * 3
     positions.push({
-      x: Math.max(0, Math.min(163, cols[col] + stagger + xJitter)),
+      x: Math.max(0, Math.min(148, cols[col] + stagger + xJitter)),
       y: Math.round(24 + levelInCol * rowHeight + yJitter),
       r: Math.round((rng() - 0.5) * 22),
       s: +(0.96 + rng() * 0.08).toFixed(2),
