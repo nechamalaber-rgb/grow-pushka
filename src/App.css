@@ -263,18 +263,18 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 .falling-coin {
   position: absolute;
   top: 0;
-  width: 49px;
-  height: 49px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: radial-gradient(circle at 38% 32%,
     #fffff0 0%, #ffe878 14%, #ffd030 30%,
     #d4920a 54%, #a06010 76%, #6a3c06 100%);
   box-shadow:
-    0 3px 0 rgba(80,40,0,0.7),
-    0 9px 26px rgba(140,70,0,0.55),
-    0 4px 14px rgba(0,0,0,0.3),
-    inset 0 4px 10px rgba(255,255,200,0.75),
-    inset 0 -4px 10px rgba(0,0,0,0.22);
+    0 2px 0 rgba(80,40,0,0.7),
+    0 6px 18px rgba(140,70,0,0.55),
+    0 3px 10px rgba(0,0,0,0.3),
+    inset 0 3px 7px rgba(255,255,200,0.75),
+    inset 0 -3px 7px rgba(0,0,0,0.22);
   animation: coinDrop 0.82s cubic-bezier(0.55, 0, 0.9, 0.55) forwards;
   z-index: 30;
   pointer-events: none;
@@ -285,23 +285,23 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 .falling-coin::before {
   content: '';
   position: absolute;
-  inset: 6px;
+  inset: 4px;
   border-radius: 50%;
   border: 1px solid rgba(255,230,80,0.35);
 }
 .falling-coin::after {
   content: '';
   position: absolute;
-  top: 7px;
-  left: 10px;
-  width: 16px;
-  height: 11px;
+  top: 5px;
+  left: 7px;
+  width: 11px;
+  height: 8px;
   border-radius: 50%;
   background: rgba(255,255,255,0.5);
   filter: blur(2px);
 }
 .falling-coin-label {
-  font-size: 17px;
+  font-size: 12px;
   font-weight: 900;
   color: rgba(80,40,0,0.52);
   font-family: 'Inter', sans-serif;
@@ -319,7 +319,7 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   margin-bottom: -2px;
 }
 .pushka-slot-base {
-  width: 250px;
+  width: 175px;
   height: 35px;
   background: linear-gradient(180deg, #dde2ea 0%, #b0b8c4 50%, #8a9098 100%);
   border-radius: 50%;
@@ -333,7 +333,7 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   justify-content: center;
 }
 .pushka-slot-hole {
-  width: 77px;
+  width: 54px;
   height: 10px;
   background: #0d0d0d;
   border-radius: 5px;
@@ -342,7 +342,7 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 
 /* The cylinder body */
 .pushka-body {
-  width: 250px;
+  width: 175px;
   height: 352px;
   border-radius: 4px 4px 50% 50% / 4px 4px 28px 28px;
   position: relative;
@@ -457,19 +457,19 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 /* ── RESTING COIN on the slot ── */
 .pushka-resting-coin {
   position: absolute;
-  top: -19px;
+  top: -13px;
   left: 50%;
   transform: translateX(-50%) rotate(-8deg);
-  width: 37px;
-  height: 37px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: radial-gradient(ellipse at 38% 32%,
     #fffff0 0%, #ffe878 14%, #ffd030 30%,
     #d4920a 54%, #a06010 76%, #6a3c06 100%);
   box-shadow:
-    0 3px 6px rgba(0,0,0,0.35),
-    inset 0 3px 6px rgba(255,255,255,0.7),
-    inset 0 -3px 6px rgba(0,0,0,0.25);
+    0 2px 4px rgba(0,0,0,0.35),
+    inset 0 2px 4px rgba(255,255,255,0.7),
+    inset 0 -2px 4px rgba(0,0,0,0.25);
   z-index: 5;
 }
 
@@ -502,18 +502,18 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 /* ── PILE COINS — realistic angled coins with visible edge ── */
 .pile-coin-3d {
   position: absolute;
-  width: 49px;
-  height: 31px;
+  width: 34px;
+  height: 22px;
   border-radius: 50%;
   /* gold face */
   background: radial-gradient(ellipse at 42% 35%,
     #fffff0 0%, #fff0a0 12%, #ffd030 26%,
     #e09010 48%, #b06c0a 70%, #7a4406 100%);
   box-shadow:
-    0 7px 0 rgba(90,48,0,0.82),
-    0 calc(9px + var(--depth, 0) * 7px) calc(16px + var(--depth, 0) * 13px) rgb(0 0 0 / calc(0.42 + var(--depth, 0) * 0.28)),
-    inset 0 3px 7px rgba(255,250,170,0.75),
-    inset 0 -1px 4px rgba(0,0,0,0.3);
+    0 5px 0 rgba(90,48,0,0.82),
+    0 calc(6px + var(--depth, 0) * 5px) calc(11px + var(--depth, 0) * 9px) rgb(0 0 0 / calc(0.42 + var(--depth, 0) * 0.28)),
+    inset 0 2px 5px rgba(255,250,170,0.75),
+    inset 0 -1px 3px rgba(0,0,0,0.3);
   animation: coinAppear 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
 }
 /* silver */
@@ -522,10 +522,10 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
     #ffffff 0%, #e8f2ff 12%, #c8d8f0 26%,
     #90a8c8 48%, #607890 70%, #3c5060 100%);
   box-shadow:
-    0 7px 0 rgba(28,42,60,0.75),
-    0 calc(9px + var(--depth, 0) * 7px) calc(16px + var(--depth, 0) * 13px) rgb(0 0 0 / calc(0.42 + var(--depth, 0) * 0.28)),
-    inset 0 3px 7px rgba(255,255,255,0.85),
-    inset 0 -1px 4px rgba(0,0,0,0.22);
+    0 5px 0 rgba(28,42,60,0.75),
+    0 calc(6px + var(--depth, 0) * 5px) calc(11px + var(--depth, 0) * 9px) rgb(0 0 0 / calc(0.42 + var(--depth, 0) * 0.28)),
+    inset 0 2px 5px rgba(255,255,255,0.85),
+    inset 0 -1px 3px rgba(0,0,0,0.22);
 }
 /* copper */
 .pile-coin-3d:nth-child(7n+5) {
@@ -533,16 +533,16 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
     #ffe8c0 0%, #d89848 12%, #b06828 26%,
     #884218 48%, #602810 70%, #3c1408 100%);
   box-shadow:
-    0 7px 0 rgba(55,22,5,0.78),
-    0 calc(9px + var(--depth, 0) * 7px) calc(16px + var(--depth, 0) * 13px) rgb(0 0 0 / calc(0.42 + var(--depth, 0) * 0.28)),
-    inset 0 3px 7px rgba(255,210,130,0.65),
-    inset 0 -1px 4px rgba(0,0,0,0.28);
+    0 5px 0 rgba(55,22,5,0.78),
+    0 calc(6px + var(--depth, 0) * 5px) calc(11px + var(--depth, 0) * 9px) rgb(0 0 0 / calc(0.42 + var(--depth, 0) * 0.28)),
+    inset 0 2px 5px rgba(255,210,130,0.65),
+    inset 0 -1px 3px rgba(0,0,0,0.28);
 }
 /* inner rim */
 .pile-coin-3d::before {
   content: '';
   position: absolute;
-  inset: 3px;
+  inset: 2px;
   border-radius: 50%;
   border: 1px solid rgba(255,240,120,0.3);
   pointer-events: none;
@@ -563,10 +563,10 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 /* round specular highlight (separate layer from the diagonal sheen) */
 .pile-coin-shine {
   position: absolute;
-  top: 4px;
-  left: 7px;
-  width: 16px;
-  height: 9px;
+  top: 3px;
+  left: 5px;
+  width: 11px;
+  height: 6px;
   border-radius: 50%;
   background: rgba(255,255,255,0.55);
   filter: blur(1.5px);
