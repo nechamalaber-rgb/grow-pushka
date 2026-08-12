@@ -1992,6 +1992,12 @@ export default function App() {
     const allDonations = s.dbDonations || []
     const donations = allDonations.filter(d => d.status === 'confirmed')
     const pendingDonations = allDonations.filter(d => d.status === 'pending_verification')
+
+    const verifyDonation = async (id) => {
+      const { error } = await supabase.from('donations').update({ status: 'confirmed' }).eq('id', id)
+      if (error) { alert('Failed to verify: ' + error.message); return }
+      set({ dbDonations: allDonations.map(d => d.id === id ? { ...d, status: 'confirmed' } : d) })
+    }
     const totalDonations = donations.reduce((sum, d) => sum + Number(d.amount), 0)
     const cardDonations = donations.filter(d => d.method === 'card')
     const zelleDonations = donations.filter(d => d.method === 'zelle')
@@ -2079,12 +2085,20 @@ export default function App() {
               <>
                 <div style={{ fontSize: 12, color: '#ff8c69', fontWeight: 600, marginTop: 12, marginBottom: 4 }}>⏳ Pending Zelle Verification</div>
                 {pendingDonations.map((d, i) => (
-                  <div key={d.id || i} className="history-row" style={{ opacity: 0.7 }}>
+                  <div key={d.id || i} className="history-row" style={{ opacity: 0.9, alignItems: 'center', gap: 10 }}>
                     <div>
                       <div className="history-label" style={{ color: '#ff8c69' }}>{d.label}</div>
                       <div className="history-date">{d.user_email || 'Guest'} · {new Date(d.created_at).toLocaleDateString()}{d.notes ? ` · "${d.notes}"` : ''}</div>
                     </div>
-                    <div className="history-amount" style={{ color: '#ff8c69' }}>${Number(d.amount).toFixed(2)}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div className="history-amount" style={{ color: '#ff8c69' }}>${Number(d.amount).toFixed(2)}</div>
+                      <button
+                        onClick={() => verifyDonation(d.id)}
+                        style={{ fontSize: 12, fontWeight: 700, color: '#fff', background: '#2ea043', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                      >
+                        ✓ Verify
+                      </button>
+                    </div>
                   </div>
                 ))}
               </>
