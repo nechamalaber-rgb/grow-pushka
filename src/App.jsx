@@ -144,8 +144,8 @@ function mulberry32(seed) {
 // variance so the pile reads as naturally tossed-in rather than a grid.
 function buildOrganicPilePositions() {
   const rng = mulberry32(20260810)
-  const rowHeight = 24
-  const cols = [0, 27, 55, 83, 111, 138]
+  const rowHeight = 26
+  const cols = [0, 30, 61, 91, 122, 152]
   // Precompute a small stable x/rotation/scale jitter per (column, row-in-column)
   // slot up front, then assign coins to columns round-robin (always filling
   // whichever column is currently shortest) so the pile is provably level —
@@ -164,8 +164,8 @@ function buildOrganicPilePositions() {
     const xJitter = (rng() - 0.5) * 5
     const yJitter = (rng() - 0.5) * 3
     positions.push({
-      x: Math.max(0, Math.min(148, cols[col] + stagger + xJitter)),
-      y: Math.round(22 + levelInCol * rowHeight + yJitter),
+      x: Math.max(0, Math.min(163, cols[col] + stagger + xJitter)),
+      y: Math.round(24 + levelInCol * rowHeight + yJitter),
       r: Math.round((rng() - 0.5) * 22),
       s: +(0.96 + rng() * 0.08).toFixed(2),
     })
@@ -2260,7 +2260,7 @@ export default function App() {
         {/* ── MEMORIAL ── */}
         <div style={{
           margin: '0 auto',
-          maxWidth: '96%',
+          maxWidth: '80%',
           borderRadius: 16,
           overflow: 'hidden',
           background: '#080d18',
@@ -2334,7 +2334,7 @@ export default function App() {
                   <div
                     key={pct}
                     className={`pushka-milestone ${(Math.min(s.pushkaBalance, s.pushkaGoal) / s.pushkaGoal) * 100 >= pct ? 'reached' : ''}`}
-                    style={{ bottom: `${(pct / 100) * 300}px` }}
+                    style={{ bottom: `${(pct / 100) * 330}px` }}
                   >
                     <span className="pushka-milestone-label">{pct}%</span>
                     <span className="pushka-milestone-line" />
@@ -2342,7 +2342,7 @@ export default function App() {
                 ))}
 
                 <div className="pushka-pile">
-                  <div className="pile-sand" style={{ height: `${Math.max(35, Math.round((Math.min(s.pushkaBalance, s.pushkaGoal) / s.pushkaGoal) * 300))}px` }} />
+                  <div className="pile-sand" style={{ height: `${Math.max(35, Math.round((Math.min(s.pushkaBalance, s.pushkaGoal) / s.pushkaGoal) * 330))}px` }} />
                   {s.pileCoins.map(coin => {
                     const pos = PILE_POSITIONS[coin.posIdx]
                     if (!pos) return null
@@ -2352,7 +2352,7 @@ export default function App() {
                         className="pile-coin-3d"
                         style={{
                           '--r': `${pos.r}deg`,
-                          '--depth': (pos.y / 207).toFixed(2),
+                          '--depth': (pos.y / 228).toFixed(2),
                           left: `${pos.x}px`,
                           bottom: `${pos.y}px`,
                           transform: `rotate(${pos.r}deg) scale(${pos.s})`,

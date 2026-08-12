@@ -319,8 +319,8 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   margin-bottom: -2px;
 }
 .pushka-slot-base {
-  width: 175px;
-  height: 32px;
+  width: 193px;
+  height: 35px;
   background: linear-gradient(180deg, #dde2ea 0%, #b0b8c4 50%, #8a9098 100%);
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.6);
@@ -333,8 +333,8 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   justify-content: center;
 }
 .pushka-slot-hole {
-  width: 54px;
-  height: 9px;
+  width: 59px;
+  height: 10px;
   background: #0d0d0d;
   border-radius: 5px;
   box-shadow: inset 0 2px 5px rgba(0,0,0,1), 0 1px 0 rgba(255,255,255,0.15);
@@ -342,8 +342,8 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
 
 /* The cylinder body */
 .pushka-body {
-  width: 175px;
-  height: 320px;
+  width: 193px;
+  height: 352px;
   border-radius: 4px 4px 50% 50% / 4px 4px 28px 28px;
   position: relative;
   display: flex;
@@ -373,7 +373,7 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   bottom: -1px;
   left: -1px;
   right: -1px;
-  height: 28px;
+  height: 31px;
   background: linear-gradient(180deg, #e0e4ec 0%, #b8bec8 100%);
   border-radius: 0 0 50% 50%;
   border: 1px solid rgba(180,188,200,0.5);
