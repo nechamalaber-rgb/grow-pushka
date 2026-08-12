@@ -2260,7 +2260,7 @@ export default function App() {
         {/* ── MEMORIAL ── */}
         <div style={{
           margin: '0 auto',
-          maxWidth: '80%',
+          maxWidth: '96%',
           borderRadius: 16,
           overflow: 'hidden',
           background: '#080d18',
