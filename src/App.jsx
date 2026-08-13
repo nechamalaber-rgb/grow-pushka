@@ -692,8 +692,8 @@ export default function App() {
         reminderTimerRef.current = setTimeout(() => {
           try {
             if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-              new Notification('🪙 GROW Pushka', {
-                body: 'A little tzedakah goes a long way 🪙',
+              new Notification('GROW Pushka', {
+                body: 'A little tzedakah goes a long way',
                 icon: '/favicon.ico',
               })
             }
@@ -1229,7 +1229,7 @@ export default function App() {
             <div className="auth-logo-icon">צ</div>
             <div className="auth-app-name">GROW Pushka</div>
           </div>
-          <p className="auth-tagline">Your digital tzedakah box 🪙</p>
+          <p className="auth-tagline">Your digital tzedakah box</p>
           <div className="auth-howit">
             Drop coins · Fill your pushka · Donate to Jewish Greenbush Chabad
           </div>
@@ -2178,7 +2178,7 @@ export default function App() {
             </div>
             <div className="intro-steps">
               <div className="intro-step">
-                <div className="intro-step-icon">🪙</div>
+                <div className="intro-step-icon"><CoinIcon size={20} /></div>
                 <div>
                   <div className="intro-step-title">Drop coins</div>
                   <div className="intro-step-sub">Tap any amount to add to your pushka</div>
@@ -2221,7 +2221,7 @@ export default function App() {
 
         <div className="goal-strip">
           <div className="goal-strip-top">
-            <span className="goal-strip-label">🪙 {s.user?.user_metadata?.full_name?.split(' ')[0] ? `${s.user.user_metadata.full_name.split(' ')[0]}'s` : 'My'} Pushka Goal</span>
+            <span className="goal-strip-label">{s.user?.user_metadata?.full_name?.split(' ')[0] ? `${s.user.user_metadata.full_name.split(' ')[0]}'s` : 'My'} Pushka Goal</span>
             <span className="goal-strip-nums">
               ${Math.min(s.pushkaBalance, s.pushkaGoal).toFixed(2)}
               <span className="goal-strip-of"> / ${s.pushkaGoal.toLocaleString()}</span>
@@ -2389,7 +2389,7 @@ export default function App() {
           <div className="tysm-toast">
             <div className="tysm-emoji">✨</div>
             <div className="tysm-text">{s.thankYouMsg?.text || 'Thank you so much!'}</div>
-            <div className="tysm-sub">{s.thankYouMsg ? s.thankYouMsg.sub(s.thankYouAmount) : `$${s.thankYouAmount} dropped in — you're amazing 🪙`}</div>
+            <div className="tysm-sub">{s.thankYouMsg ? s.thankYouMsg.sub(s.thankYouAmount) : `$${s.thankYouAmount} dropped in — you're amazing`}</div>
           </div>
         )}
 
@@ -2416,7 +2416,7 @@ export default function App() {
               if (!amt || amt < 1) return
               set({ customAmount: '', showHomeCustom: false, lastCustomAmount: amt })
               dropCoins(amt)
-            }}>Add 🪙</button>
+            }}>Add</button>
           </div>
         )}
         {!s.user && (
@@ -2444,7 +2444,7 @@ export default function App() {
 
         {s.pushkaBalance > 0 && (
           <button className="quick-give-btn pay-now-btn" onClick={() => set({ screen: 'checkout', pendingPayment: s.pushkaBalance, customAmount: String(parseFloat(s.pushkaBalance.toFixed(2))) })}>
-            🪙 Donate ${s.pushkaBalance.toFixed(2)} to Jewish Greenbush Chabad →
+            Donate ${s.pushkaBalance.toFixed(2)} to Jewish Greenbush Chabad
           </button>
         )}
 
