@@ -141,6 +141,23 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   gap: 5px;
 }
 
+/* ── APP CREDIT ── */
+.app-credit {
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 18px;
+  padding-bottom: 4px;
+}
+.app-credit a {
+  color: var(--teal);
+  font-weight: 600;
+  text-decoration: none;
+}
+.app-credit a:hover {
+  text-decoration: underline;
+}
+
 /* ── GLASS CARD ── */
 .glass-card {
   background: rgba(255,255,255,0.92);

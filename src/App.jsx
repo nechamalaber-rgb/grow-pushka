@@ -2447,6 +2447,10 @@ export default function App() {
             🪙 Donate ${s.pushkaBalance.toFixed(2)} to Jewish Greenbush Chabad →
           </button>
         )}
+
+        <div className="app-credit">
+          Built by <a href="mailto:schneurlaber@gmail.com">Schneur Laber</a>
+        </div>
       </div>
 
     </div>
