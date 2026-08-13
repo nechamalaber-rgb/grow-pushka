@@ -204,11 +204,11 @@ const INITIAL_PERSONAL = 72 // 18+36+18
 const ZELLE_PHONE = '5187276037'
 
 const CAUSES = [
-  { id: 'general',      name: 'Where Most Needed',    emoji: '🕊️', desc: 'Let the Chabad direct your donation where it is needed most right now.' },
-  { id: 'scholarships', name: 'Scholarships',          emoji: '📚', desc: 'Help Jewish children and families access programs and education through scholarship support.' },
-  { id: 'newwing',      name: 'New Wing Campaign',     emoji: '🏛️', desc: 'Contribute to the new building wing that will expand our community\'s capacity to serve.' },
-  { id: 'kitchen',      name: "Raizel's Kitchen",      emoji: '🍲', desc: 'Support Esther\'s Kitchen — providing warm Shabbos and holiday meals to the community.' },
-  { id: 'levels',       name: 'Levels Campaign',       emoji: '⭐', desc: 'Join our Levels Campaign and help us reach our fundraising milestones together.' },
+  { id: 'general',      name: 'Where Most Needed',    desc: 'Let the Chabad direct your donation where it is needed most right now.' },
+  { id: 'scholarships', name: 'Scholarships',          desc: 'Help Jewish children and families access programs and education through scholarship support.' },
+  { id: 'newwing',      name: 'New Wing Campaign',     desc: 'Contribute to the new building wing that will expand our community\'s capacity to serve.' },
+  { id: 'kitchen',      name: "Raizel's Kitchen",      desc: 'Support Esther\'s Kitchen — providing warm Shabbos and holiday meals to the community.' },
+  { id: 'levels',       name: 'Levels Campaign',       desc: 'Join our Levels Campaign and help us reach our fundraising milestones together.' },
 ]
 
 // Keys that persist to localStorage
@@ -373,6 +373,19 @@ const TrashIcon = p => <Icon {...p}><path d="M4 7h16" /><path d="M9 7V5a1 1 0 0 
 const DocumentIcon = p => <Icon {...p}><path d="M7 3h7l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" /><path d="M14 3v4h4" /><line x1="8.5" y1="12" x2="15.5" y2="12" /><line x1="8.5" y1="15.5" x2="15.5" y2="15.5" /></Icon>
 const LinkIcon = p => <Icon {...p}><path d="M9.5 14.5l5-5" /><path d="M11 6.5l1-1a3.5 3.5 0 0 1 5 5l-1 1" /><path d="M13 17.5l-1 1a3.5 3.5 0 0 1-5-5l1-1" /></Icon>
 const AlertTriangleIcon = p => <Icon {...p}><path d="M12 4.5l9 15.5H3z" /><line x1="12" y1="10" x2="12" y2="14.5" /><circle cx="12" cy="17.2" r="0.4" fill="currentColor" stroke="none" /></Icon>
+const HeartIcon = p => <Icon {...p}><path d="M12 20.5c-.3 0-.6-.1-.8-.3C7.8 17.5 3 13.7 3 9.3 3 6.4 5.3 4 8.2 4c1.6 0 3 .7 3.8 1.9C12.8 4.7 14.2 4 15.8 4 18.7 4 21 6.4 21 9.3c0 4.4-4.8 8.2-8.2 10.9-.2.2-.5.3-.8.3z" /></Icon>
+const BookIcon = p => <Icon {...p}><path d="M12 6.5c-2-1.3-5-1.7-8-1v13c3-.7 6-.3 8 1 2-1.3 5-1.7 8-1v-13c-3-.7-6-.3-8 1z" /><line x1="12" y1="6.5" x2="12" y2="19.5" /></Icon>
+const BuildingIcon = p => <Icon {...p}><path d="M4 10l8-5 8 5" /><rect x="5" y="10" width="14" height="9" /><line x1="9" y1="10" x2="9" y2="19" /><line x1="15" y1="10" x2="15" y2="19" /><line x1="3" y1="19" x2="21" y2="19" /></Icon>
+const BowlIcon = p => <Icon {...p}><path d="M4 12a8 8 0 0 0 16 0z" /><line x1="3" y1="12" x2="21" y2="12" /><path d="M9.5 9c0-1 .5-1.5.5-2.5S9.5 5 9.5 5" /><path d="M14.5 9c0-1 .5-1.5.5-2.5S14.5 5 14.5 5" /></Icon>
+const StarIcon = p => <Icon {...p}><path d="M12 3.5l2.6 5.6 6.1.6-4.6 4.1 1.3 6-5.4-3.2-5.4 3.2 1.3-6-4.6-4.1 6.1-.6z" /></Icon>
+
+const CAUSE_ICONS = {
+  general: HeartIcon,
+  scholarships: BookIcon,
+  newwing: BuildingIcon,
+  kitchen: BowlIcon,
+  levels: StarIcon,
+}
 
 function Menu({ menuOpen, user, set, onSignOut }) {
   return (
@@ -1448,15 +1461,18 @@ export default function App() {
 
         <div className="cause-label">Where should your donation go?</div>
         <div className="cause-pills">
-          {CAUSES.map(c => (
-            <button
-              key={c.id}
-              className={`cause-pill ${s.donationCause === c.id ? 'active' : ''}`}
-              onClick={() => set({ donationCause: c.id })}
-            >
-              {c.emoji} {c.name}
-            </button>
-          ))}
+          {CAUSES.map(c => {
+            const CauseIcon = CAUSE_ICONS[c.id]
+            return (
+              <button
+                key={c.id}
+                className={`cause-pill ${s.donationCause === c.id ? 'active' : ''}`}
+                onClick={() => set({ donationCause: c.id })}
+              >
+                {CauseIcon && <CauseIcon size={14} />} {c.name}
+              </button>
+            )
+          })}
         </div>
 
         <PhotoStrip />
