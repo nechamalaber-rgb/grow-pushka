@@ -2449,7 +2449,7 @@ export default function App() {
         )}
 
         <div className="app-credit">
-          Built by <a href="mailto:schneurlaber@gmail.com">Schneur Laber</a> · <a href="mailto:adlaber@gmail.com">adlaber@gmail.com</a>
+          Built by <a href="mailto:schneurlaber@gmail.com">Schneur Laber</a> · <a href="mailto:schneurlaber@gmail.com">schneurlaber@gmail.com</a>
         </div>
       </div>
 
