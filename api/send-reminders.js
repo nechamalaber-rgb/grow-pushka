@@ -61,14 +61,16 @@ function shouldSendNow(reminderTime, pushkaFull, pushkaClose) {
   return pushkaFull || pushkaClose || utcDay === 2 || utcDay === 5;
 }
 
-function getEmailContent(pushkaFull, pushkaClose, balance, goal, percent) {
+function getEmailContent(pushkaFull, pushkaClose, balance, goal, percent, firstName) {
+  const name = firstName || 'Friend';
+
   if (pushkaFull) {
     return {
       emoji: '🎉',
-      subject: `Your pushka is full — time to donate!`,
-      headline: 'Dear Friend,',
+      subject: `${name}, your pushka is full — time to donate!`,
+      headline: `Dear ${name},`,
       verse: 'צדקה תציל ממות',
-      message: `Your pushka has reached its goal of $${goal}!\n\nThis is the moment you've been building toward. The coins are ready. The mitzvah is waiting. All that's left is to send your donation to Jewish Greenbush Chabad and make it real.\n\nThe Rebbe taught: act on a mitzvah the moment you have the chance. Don't let it wait.`,
+      message: `Your pushka has reached its goal of $${goal}!\n\nThis is the moment you've been building toward, ${name}. The coins are ready. The mitzvah is waiting. All that's left is to send your donation to Jewish Greenbush Chabad and make it real.\n\nThe Rebbe taught: act on a mitzvah the moment you have the chance. Don't let it wait.`,
       cta: 'Donate Now →',
       color1: '#c8922a',
       color2: '#f5c842',
@@ -78,10 +80,10 @@ function getEmailContent(pushkaFull, pushkaClose, balance, goal, percent) {
   if (pushkaClose) {
     return {
       emoji: '✨',
-      subject: `So close! Your pushka is ${percent}% full`,
-      headline: 'Dear Friend,',
+      subject: `So close, ${name}! Your pushka is ${percent}% full`,
+      headline: `Dear ${name},`,
       verse: 'כל המוסיף מוסיפין לו',
-      message: `Your pushka is ${percent}% of the way to its $${goal} goal — just $${(goal - balance).toFixed(2)} left!\n\nYou're almost there. A few more coins and this mitzvah is complete. Don't let it sit unfinished — the last stretch is often the most meaningful.\n\nAdd a coin today and cross the finish line.`,
+      message: `Your pushka is ${percent}% of the way to its $${goal} goal — just $${(goal - balance).toFixed(2)} left!\n\nYou're almost there, ${name}. A few more coins and this mitzvah is complete. Don't let it sit unfinished — the last stretch is often the most meaningful.\n\nAdd a coin today and cross the finish line.`,
       cta: 'Finish my Pushka →',
       color1: '#1a2a5e',
       color2: '#2d4a9e',
@@ -94,9 +96,9 @@ function getEmailContent(pushkaFull, pushkaClose, balance, goal, percent) {
     return {
       emoji: '🕯️',
       subject: 'Shabbat is almost here — add a coin to your Pushka',
-      headline: 'Dear Friend,',
+      headline: `Dear ${name},`,
       verse: 'נר מצוה ותורה אור',
-      message: `As Shabbat approaches, there is no more beautiful way to prepare than with an act of tzedakah.\n\nThe Alter Rebbe teaches that tzedakah given before Shabbat carries special power — it elevates the entire week and draws down brachos for you and your family.\n\nBefore you light candles tonight, take a moment to add a coin to your pushka. It takes seconds, and the zechus lasts forever.\n\nWishing you and yours a Shabbat full of light, peace, and joy.`,
+      message: `As Shabbat approaches, there is no more beautiful way to prepare than with an act of tzedakah.\n\nThe Alter Rebbe teaches that tzedakah given before Shabbat carries special power — it elevates the entire week and draws down brachos for you and your family.\n\nBefore you light candles tonight, ${name}, take a moment to add a coin to your pushka. It takes seconds, and the zechus lasts forever.\n\nWishing you and yours a Shabbat full of light, peace, and joy.`,
       cta: 'Add to my Pushka before Shabbat →',
       color1: '#c8922a',
       color2: '#f5c842',
@@ -107,22 +109,22 @@ function getEmailContent(pushkaFull, pushkaClose, balance, goal, percent) {
   const options = [
     {
       subject: 'A small act — a lasting impact',
-      message: `The Talmud tells us: "Tzedakah tatzil mimavet" — tzedakah saves from death. Not once. Not occasionally. Every single time.\n\nYour pushka is ${percent}% full. Each coin you've added represents a moment of generosity, a spark of kindness sent into the world.\n\nToday, add another one. It doesn't have to be much. It just has to be.`,
+      message: `The Talmud tells us: "Tzedakah tatzil mimavet" — tzedakah saves from death. Not once. Not occasionally. Every single time.\n\nYour pushka is ${percent}% full, ${name}. Each coin you've added represents a moment of generosity, a spark of kindness sent into the world.\n\nToday, add another one. It doesn't have to be much. It just has to be.`,
     },
     {
       subject: 'The Rebbe said: Never pass up a mitzvah',
-      message: `The Lubavitcher Rebbe taught that a person should never let an opportunity for a mitzvah pass by — because you never know which one tips the scale.\n\nYour pushka is ${percent}% full. One more coin brings you — and the world — closer to something beautiful.\n\nDon't let today pass without it.`,
+      message: `The Lubavitcher Rebbe taught that a person should never let an opportunity for a mitzvah pass by — because you never know which one tips the scale.\n\nYour pushka is ${percent}% full, ${name}. One more coin brings you — and the world — closer to something beautiful.\n\nDon't let today pass without it.`,
     },
     {
       subject: 'Your pushka is waiting',
-      message: `Rabbi Akiva said: "Tzedakah is the salt of money" — it preserves and purifies everything it touches.\n\nYour pushka is ${percent}% full. A coin at a time is more than a habit — it's a statement about who you are and what you value.\n\nAdd one today.`,
+      message: `Rabbi Akiva said: "Tzedakah is the salt of money" — it preserves and purifies everything it touches.\n\nYour pushka is ${percent}% full, ${name}. A coin at a time is more than a habit — it's a statement about who you are and what you value.\n\nAdd one today.`,
     },
   ]
   const pick = options[Math.floor(Math.random() * options.length)]
   return {
     emoji: '🪙',
     subject: pick.subject,
-    headline: 'Dear Friend,',
+    headline: `Dear ${name},`,
     verse: 'צדקה תציל ממות',
     message: pick.message,
     cta: 'Add to my Pushka →',
@@ -231,13 +233,15 @@ export default async function handler(req, res) {
       if (userError || !userData?.user?.email) continue;
 
       const email = userData.user.email;
+      const firstName = userData.user.user_metadata?.full_name?.split(' ')[0] || null;
       const percent = Math.min(100, Math.round((balance / goal) * 100));
-      const content = getEmailContent(pushkaFull, pushkaClose, balance.toFixed(2), goal, percent);
+      const content = getEmailContent(pushkaFull, pushkaClose, balance.toFixed(2), goal, percent, firstName);
 
       try {
         await supabase.from('user_data').update({ last_reminded_at: new Date().toISOString() }).eq('user_id', row.user_id);
 
         const bodyHtml = `
+          <p style="font-size: 16px; line-height: 1.8; color: #1a1a1a; margin-top: 0; margin-bottom: 4px; font-weight: 700;">${content.headline}</p>
           <p style="font-size: 16px; line-height: 1.8; color: #1a1a1a; margin-top: 0; white-space: pre-line;">${content.message}</p>
 
           <div style="border: 1px solid #e8e8e8; border-radius: 10px; padding: 18px; margin: 28px 0; background: #fafafa;">
