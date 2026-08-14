@@ -898,6 +898,11 @@ export default function App() {
     }
     if (data?.session?.user) {
       set({ user: data.session.user, screen: 'home' })
+      // FIX #25 — must load explicitly: the onAuthStateChange listener's
+      // "same user, skip loadFromCloud" dedup check can race against the
+      // set() above and think this user's data is already loaded when
+      // it never was, leaving the user signed in with empty local data
+      loadFromCloud(data.session.user)
     }
   }
 
