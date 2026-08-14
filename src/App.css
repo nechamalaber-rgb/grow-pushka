@@ -1234,6 +1234,18 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   font-weight: 500;
   text-align: left;
   line-height: 1.4;
+  padding-left: 14px;
+  position: relative;
+}
+.intro-activity::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
 }
 .intro-skip {
   background: none;
@@ -1525,7 +1537,7 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   gap: 18px;
   text-align: center;
 }
-.success-glow { font-size: 80px; filter: drop-shadow(0 0 20px rgba(30,80,104,0.3)); }
+.success-glow { display: flex; justify-content: center; color: var(--gold); filter: drop-shadow(0 0 20px rgba(200,146,42,0.35)); }
 .success-title {
   font-size: 52px;
   font-weight: 700;
@@ -1666,7 +1678,10 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   animation: toastIn 2.2s cubic-bezier(0.4,0,0.2,1) forwards;
 }
 .tysm-emoji {
-  font-size: 36px;
+  color: var(--gold);
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
 }
 .tysm-text {
   font-size: 22px;
@@ -1709,6 +1724,7 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   align-items: center;
   justify-content: center;
   font-size: 32px;
+  color: var(--teal);
   font-family: 'Cormorant Garamond', serif;
   font-weight: 700;
   color: var(--teal);
@@ -2168,7 +2184,12 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   text-align: center;
   color: var(--muted);
   font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 }
+.payment-modal-secure svg { flex-shrink: 0; }
 
 .google-btn-container {
   width: 100%;
@@ -2255,7 +2276,12 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
+.payment-tab svg { flex-shrink: 0; }
 .payment-tab.active {
   background: #FFFFFF;
   color: var(--teal);
@@ -2444,7 +2470,11 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   font-size: 14px;
   margin-bottom: 10px;
   line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
+.recurring-banner-text svg { flex-shrink: 0; }
 .recurring-banner-text strong { color: var(--teal); }
 .recurring-banner-btns { display: flex; gap: 10px; }
 .recurring-yes {

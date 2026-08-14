@@ -43,16 +43,16 @@ const ACTIVITY_DATA = [
 ]
 
 const COIN_MESSAGES = [
-  { text: 'You just added light 🕯️',        sub: (amt) => `$${amt} — tzedakah illuminates the world` },
-  { text: 'A soul was uplifted ✨',           sub: (amt) => `$${amt} dropped — your kindness reaches far` },
-  { text: 'The world is brighter 🌟',        sub: (amt) => `$${amt} — one coin, one moment of goodness` },
-  { text: 'Hashem sees every coin 👑',       sub: (amt) => `$${amt} — nothing goes unnoticed` },
-  { text: 'You are making history 📖',       sub: (amt) => `$${amt} — your name is written in kindness` },
-  { text: 'A mitzvah that lives forever 💫', sub: (amt) => `$${amt} — tzedakah tatzil mimavet` },
-  { text: 'Your heart is golden 💛',         sub: (amt) => `$${amt} added — pure and beautiful` },
-  { text: 'Changing lives right now 🌺',     sub: (amt) => `$${amt} — someone will feel this` },
-  { text: 'You are a blessing 🙏',           sub: (amt) => `$${amt} — the world needs exactly you` },
-  { text: 'Am Yisrael Chai! 🔥',            sub: (amt) => `$${amt} — strong, giving, unstoppable` },
+  { text: 'You just added light',        sub: (amt) => `$${amt} — tzedakah illuminates the world` },
+  { text: 'A soul was uplifted',         sub: (amt) => `$${amt} dropped — your kindness reaches far` },
+  { text: 'The world is brighter',       sub: (amt) => `$${amt} — one coin, one moment of goodness` },
+  { text: 'Hashem sees every coin',      sub: (amt) => `$${amt} — nothing goes unnoticed` },
+  { text: 'You are making history',      sub: (amt) => `$${amt} — your name is written in kindness` },
+  { text: 'A mitzvah that lives forever', sub: (amt) => `$${amt} — tzedakah tatzil mimavet` },
+  { text: 'Your heart is golden',        sub: (amt) => `$${amt} added — pure and beautiful` },
+  { text: 'Changing lives right now',    sub: (amt) => `$${amt} — someone will feel this` },
+  { text: 'You are a blessing',          sub: (amt) => `$${amt} — the world needs exactly you` },
+  { text: 'Am Yisrael Chai!',            sub: (amt) => `$${amt} — strong, giving, unstoppable` },
 ]
 
 // FIX #23 — use <img> tags with alt text instead of background-image
@@ -61,7 +61,7 @@ function PhotoStrip() {
     <div className="photo-strip-section">
       <div className="photo-strip-header">
         <span className="photo-strip-label">CHABAD JEWISH GREENBUSH RETREAT</span>
-        <span className="photo-strip-sub">Swipe to explore →</span>
+        <span className="photo-strip-sub">Swipe to explore</span>
       </div>
       <div className="photo-strip">
         {ACTIVITY_DATA.map((item) => (
@@ -120,7 +120,7 @@ function PaymentForm({ amount, onSuccess, onClose }) {
       <button className="payment-modal-btn" onClick={handleSubmit} disabled={loading || !stripe}>
         {loading ? 'Processing...' : `Donate $${amount.toFixed(2)}`}
       </button>
-      <div className="payment-modal-secure">🔒 Secured by Stripe</div>
+      <div className="payment-modal-secure"><LockIcon size={12} /> Secured by Stripe</div>
     </div>
   )
 }
@@ -378,6 +378,10 @@ const BookIcon = p => <Icon {...p}><path d="M12 6.5c-2-1.3-5-1.7-8-1v13c3-.7 6-.
 const BuildingIcon = p => <Icon {...p}><path d="M4 10l8-5 8 5" /><rect x="5" y="10" width="14" height="9" /><line x1="9" y1="10" x2="9" y2="19" /><line x1="15" y1="10" x2="15" y2="19" /><line x1="3" y1="19" x2="21" y2="19" /></Icon>
 const BowlIcon = p => <Icon {...p}><path d="M4 12a8 8 0 0 0 16 0z" /><line x1="3" y1="12" x2="21" y2="12" /><path d="M9.5 9c0-1 .5-1.5.5-2.5S9.5 5 9.5 5" /><path d="M14.5 9c0-1 .5-1.5.5-2.5S14.5 5 14.5 5" /></Icon>
 const StarIcon = p => <Icon {...p}><path d="M12 3.5l2.6 5.6 6.1.6-4.6 4.1 1.3 6-5.4-3.2-5.4 3.2 1.3-6-4.6-4.1 6.1-.6z" /></Icon>
+const LockIcon = p => <Icon {...p}><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></Icon>
+const MailIcon = p => <Icon {...p}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></Icon>
+const BankIcon = p => <Icon {...p}><path d="M3 10l9-6 9 6" /><line x1="4" y1="10" x2="20" y2="10" /><line x1="5" y1="10" x2="5" y2="18" /><line x1="10" y1="10" x2="10" y2="18" /><line x1="14" y1="10" x2="14" y2="18" /><line x1="19" y1="10" x2="19" y2="18" /><line x1="3" y1="18" x2="21" y2="18" /></Icon>
+const EditIcon = p => <Icon {...p}><path d="M4 20l.9-4.2L16 4.7a1.5 1.5 0 0 1 2.1 0l1.2 1.2a1.5 1.5 0 0 1 0 2.1L8.2 19.1z" /><line x1="14.5" y1="6.2" x2="17.8" y2="9.5" /></Icon>
 
 const CAUSE_ICONS = {
   general: HeartIcon,
@@ -434,7 +438,6 @@ function Menu({ menuOpen, user, set, onSignOut }) {
   )
 }
 
-const LEVEL_EMOJIS = { 'Prophetess Level': '⭐', Sarah: '✡️', Miriam: '🎵', Devorah: '🌿', Chana: '🙏', Chulda: '🌟', Esther: '👑' }
 const LEVEL_NEXT = { 'Prophetess Level': 'Sarah', Sarah: 'Miriam', Miriam: 'Devorah', Devorah: 'Chana', Chana: 'Chulda', Chulda: 'Esther', Esther: null }
 const LEVEL_MINS = { 'Prophetess Level': 0, Sarah: 180, Miriam: 360, Devorah: 540, Chana: 770, Chulda: 1200, Esther: 1800 }
 
@@ -458,18 +461,18 @@ function LevelDropdown({ prestige, prestigeNext, prestigeAtMax, totalPersonal, s
       {open && (
         <div style={{ position: 'absolute', right: 0, top: '110%', background: '#fff', border: '1.5px solid var(--border)', borderRadius: 14, padding: 16, minWidth: 220, zIndex: 200, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
           onClick={e => e.stopPropagation()}>
-          <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--text)', marginBottom: 4 }}>{LEVEL_EMOJIS[prestige]} {prestige}</div>
+          <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--text)', marginBottom: 4 }}>{prestige}</div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 12 }}>Total donated: <strong style={{color:'var(--teal)'}}>${totalPersonal?.toFixed(2) || '0.00'}</strong></div>
           {nextName ? (
             <>
-              <div style={{ fontSize: 12, color: '#444', fontWeight: 600, marginBottom: 6 }}>${prestigeNext} to reach {LEVEL_EMOJIS[nextName]} <strong style={{color:'#222'}}>{nextName}</strong></div>
+              <div style={{ fontSize: 12, color: '#444', fontWeight: 600, marginBottom: 6 }}>${prestigeNext} to reach <strong style={{color:'#222'}}>{nextName}</strong></div>
               <div style={{ background: '#ddd', borderRadius: 50, height: 6, overflow: 'hidden' }}>
                 <div style={{ background: 'var(--gold)', width: pct + '%', height: '100%', borderRadius: 50, transition: 'width 0.4s' }} />
               </div>
               <div style={{ fontSize: 11, color: '#555', fontWeight: 600, marginTop: 4, textAlign: 'right' }}>{pct}%</div>
             </>
-          ) : <div style={{ fontSize: 12, color: 'var(--gold)', fontWeight: 700 }}>👑 Max Level Reached!</div>}
-          {streak > 0 && <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border)', fontSize: 13, color: '#111', fontWeight: 900 }}>🔥 {streak}-day streak — keep going!</div>}
+          ) : <div style={{ fontSize: 12, color: 'var(--gold)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 }}><StarIcon size={13} /> Max Level Reached!</div>}
+          {streak > 0 && <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border)', fontSize: 13, color: '#111', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 5 }}><FireIcon size={14} /> {streak}-day streak — keep going!</div>}
           <div style={{ marginTop: 8, fontSize: 12, color: '#111', fontWeight: 900, lineHeight: 1.9 }}>
             Sarah ($180) → Miriam ($360) → Devorah ($540) → Chana ($770) → Chulda ($1,200) → Esther ($1,800)
           </div>
@@ -524,20 +527,21 @@ export default function App() {
   const audioCtxRef = useRef(null)
   const reminderTimerRef = useRef(null)
   const saveTimerRef = useRef(null)
+  const cloudLoadedRef = useRef(false)
   const timersRef = useRef([])
   const isRecoveryRef = useRef(false)
   const stateRef = useRef(s)
   stateRef.current = s
-  const successMsg = useRef("You've just added light to the world. Your tzedakah makes a real difference! 🕍")
+  const successMsg = useRef("You've just added light to the world. Your tzedakah makes a real difference!")
   useEffect(() => {
     if (s.screen === 'success') {
       const msgs = [
-        "You've just added light to the world. Your tzedakah makes a real difference! 🕍",
-        "Every dollar you gave is a mitzvah. Thank you for filling your pushka! 🙏",
-        "Your kindness fuels Shabbos tables, retreats, and smiles. You are a true blessing! ✨",
-        "Tzedakah saves! Your donation is already making waves in our community. Chazak! 💪",
-        "You did it! Your pushka is emptied and your merit is full. Jewish Greenbush Chabad thanks you! 👑",
-        "From your pushka to our community — thank you for being part of something beautiful! 🌺",
+        "You've just added light to the world. Your tzedakah makes a real difference!",
+        "Every dollar you gave is a mitzvah. Thank you for filling your pushka!",
+        "Your kindness fuels Shabbos tables, retreats, and smiles. You are a true blessing!",
+        "Tzedakah saves! Your donation is already making waves in our community. Chazak!",
+        "You did it! Your pushka is emptied and your merit is full. Jewish Greenbush Chabad thanks you!",
+        "From your pushka to our community — thank you for being part of something beautiful!",
       ]
       successMsg.current = msgs[Math.floor(Math.random() * msgs.length)]
       confetti({ particleCount: 120, spread: 100, origin: { y: 0.4 }, colors: ['#C8922A', '#F5EDD8', '#3b6fd4', '#ffe878', '#4ade80'] })
@@ -560,7 +564,10 @@ export default function App() {
   // FIX #5 — saveToCloud reads from stateRef so debounce always gets fresh state
   const saveToCloud = useCallback(() => {
     const state = stateRef.current
-    if (!state.user) return
+    // FIX #24 — never save until the initial cloud load for this session has
+    // resolved; otherwise default/local state (e.g. totalPersonal: 0) can win
+    // a race against the real data still loading and overwrite it permanently
+    if (!state.user || !cloudLoadedRef.current) return
     clearTimeout(saveTimerRef.current)
     saveTimerRef.current = setTimeout(async () => {
       const snap = stateRef.current
@@ -601,7 +608,7 @@ export default function App() {
     if (yzData) setS(prev => ({ ...prev, yahrtzeits: yzData }))
 
     const { data } = await supabase.from('user_data').select('*').eq('user_id', user.id).single()
-    if (!data) return
+    if (!data) { cloudLoadedRef.current = true; return }
     // Reset streak if last activity was before yesterday
     let streak = data.streak ?? 0
     const lastStreakDate = data.last_streak_date
@@ -642,6 +649,7 @@ export default function App() {
     const existing = loadSaved()
     localStorage.setItem('pushka_state', JSON.stringify({ ...existing, ...loaded }))
     setS(prev => ({ ...prev, ...loaded }))
+    cloudLoadedRef.current = true
     if (loaded.recurringEnabled && isRecurringDue(loaded.recurringFrequency, loaded.lastRecurringDate)) {
       setS(prev => ({ ...prev, recurringDue: true }))
     }
@@ -746,6 +754,7 @@ export default function App() {
         })
       } else if (event === 'SIGNED_OUT') {
         localStorage.removeItem('pushka_state')
+        cloudLoadedRef.current = false
         set({ user: null, pushkaBalance: 0, pileCoins: [], pendingPayment: 0, customAmount: '', donations: [], streak: 0, totalPersonal: 0, ...getPrestige(0) })
       }
     })
@@ -838,7 +847,7 @@ export default function App() {
     })
     if (error) {
       const msg = error.message.toLowerCase().includes('email not confirmed')
-        ? '📧 Please verify your email first — check your inbox for a confirmation link.'
+        ? 'Please verify your email first — check your inbox for a confirmation link.'
         : error.message
       set({ authLoading: false, authError: msg })
     } else {
@@ -952,6 +961,7 @@ export default function App() {
     }
     await supabase.auth.signOut()
     localStorage.removeItem('pushka_state')
+    cloudLoadedRef.current = false
     set({
       user: null, menuOpen: false,
       pushkaBalance: 0, pileCoins: [], pendingPayment: 0, customAmount: '',
@@ -1248,7 +1258,7 @@ export default function App() {
           </div>
 
           {s.authError && (
-            <div className="auth-error" style={s.authError.startsWith('✅') ? { background: '#dcfce7', borderColor: '#16a34a', color: '#14532d', whiteSpace: 'pre-line', fontWeight: 600, fontSize: '15px' } : {}}>
+            <div className="auth-error" style={s.authError.startsWith('Password reset email sent') ? { background: '#dcfce7', borderColor: '#16a34a', color: '#14532d', whiteSpace: 'pre-line', fontWeight: 600, fontSize: '15px' } : {}}>
               {s.authError}
             </div>
           )}
@@ -1293,13 +1303,13 @@ export default function App() {
             <button className="auth-guest" style={{ marginBottom: 4 }} onClick={async () => {
               if (!s.authEmail.trim()) return set({ authError: 'Enter your email above first' })
               await supabase.auth.resetPasswordForEmail(s.authEmail, { redirectTo: `${window.location.origin}?type=recovery` })
-              set({ authError: '✅ Password reset email sent to ' + s.authEmail + '!\n\nDon\'t see it? Check your spam/junk folder — it sometimes lands there.' })
+              set({ authError: 'Password reset email sent to ' + s.authEmail + '!\n\nDon\'t see it? Check your spam/junk folder — it sometimes lands there.' })
             }}>
               Forgot password?
             </button>
           )}
           <button className="auth-guest" onClick={() => set({ screen: 'home' })}>
-            Browse without account →
+            Browse without account
           </button>
         </div>
       </div>
@@ -1311,7 +1321,7 @@ export default function App() {
     <div className="app forest-bg">
       <div className="auth-screen">
         <div className="auth-logo">
-          <div className="auth-logo-icon">🔐</div>
+          <div className="auth-logo-icon"><LockIcon size={30} /></div>
           <div className="auth-app-name">GROW Pushka</div>
         </div>
         <h1 className="auth-title">Set New Password</h1>
@@ -1341,7 +1351,7 @@ export default function App() {
     <div className="app forest-bg">
       <div className="auth-screen">
         <div className="auth-logo">
-          <div className="auth-logo-icon">✉️</div>
+          <div className="auth-logo-icon"><MailIcon size={30} /></div>
           <div className="auth-app-name">GROW Pushka</div>
         </div>
         <h1 className="auth-title">Check Your Email</h1>
@@ -1350,7 +1360,7 @@ export default function App() {
           {s.authEmail}
         </div>
         <div className="glass-card" style={{ width: '100%', textAlign: 'center', marginBottom: 24 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>📬</div>
+          <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--teal)', marginBottom: 12 }}><MailIcon size={40} /></div>
           <p style={{ color: '#1a2a5e', fontSize: 14, lineHeight: 1.7, fontWeight: 500 }}>
             Click the link in your email to verify your account, then come back here and sign in.
           </p>
@@ -1375,12 +1385,12 @@ export default function App() {
       <Menu menuOpen={s.menuOpen} user={s.user} set={set} onSignOut={handleSignOut} />
       <Nav title={`${s.user?.user_metadata?.full_name?.split(' ')[0] || 'My'}'s Pushka`} shareToast={s.shareToast} set={set} prestige={s.prestige} streak={s.streak} prestigeNext={s.prestigeNext} prestigeAtMax={s.prestigeAtMax} totalPersonal={s.totalPersonal} />
       <div className="success-screen">
-        <div className="success-glow">✨</div>
+        <div className="success-glow"><SparkleIcon size={64} /></div>
         <h1 className="success-title">Thank You!</h1>
         <p className="success-sub">Your ${s.lastDonation} donation was received</p>
         <p className="success-msg">{successMsg.current}</p>
         <div className="glass-card impact-card">
-          <div className="stat-label">🕍 JEWISH GREENBUSH CHABAD</div>
+          <div className="stat-label">JEWISH GREENBUSH CHABAD</div>
           <div className="stat-big">${s.totalRaised.toLocaleString()} <span className="stat-muted">/ ${s.communityGoal.toLocaleString()}</span></div>
           <div className="progress-bar"><div className="progress-fill" style={{ width: pct(s.totalRaised, s.communityGoal) + '%' }} /></div>
         </div>
@@ -1435,7 +1445,7 @@ export default function App() {
         {s.pushkaBalance >= s.pushkaGoal && (
           <div className="full-banner">
             <div>Your pushka is full with ${s.pushkaBalance.toFixed(2)}!</div>
-            <button className="full-banner-change" onClick={() => set({ screen: 'settings' })}>Change Goal instead →</button>
+            <button className="full-banner-change" onClick={() => set({ screen: 'settings' })}>Change Goal instead</button>
           </div>
         )}
 
@@ -1489,18 +1499,18 @@ export default function App() {
         </div>
 
         <div className="zelle-tip">
-          💚 <strong>Tip:</strong> Paying with Zelle means 100% of your donation goes directly to Jewish Greenbush Chabad — no fees taken out. Every dollar makes a difference!
+          <strong>Tip:</strong> Paying with Zelle means 100% of your donation goes directly to Jewish Greenbush Chabad — no fees taken out. Every dollar makes a difference!
         </div>
 
         <div className="payment-tabs">
           <button
             className={`payment-tab ${s.paymentMethod === 'card' ? 'active' : ''}`}
             onClick={() => set({ paymentMethod: 'card' })}
-          >💳 Card / Apple Pay</button>
+          ><CardIcon size={14} /> Card / Apple Pay</button>
           <button
             className={`payment-tab ${s.paymentMethod === 'zelle' ? 'active' : ''}`}
             onClick={() => set({ paymentMethod: 'zelle' })}
-          >🏦 Zelle</button>
+          ><BankIcon size={14} /> Zelle</button>
         </div>
 
         {s.paymentMethod === 'card' ? (
@@ -1516,16 +1526,17 @@ export default function App() {
               }}
               disabled={s.checkoutLoading}
             >
-              {s.checkoutLoading ? 'Opening payment...' : `DONATE${s.customAmount ? ` $${parseFloat(s.customAmount).toFixed(2)}` : ''} →`}
+              {s.checkoutLoading ? 'Opening payment...' : `DONATE${s.customAmount ? ` $${parseFloat(s.customAmount).toFixed(2)}` : ''}`}
             </button>
             <div className="stripe-badge">
-              <span>🔒 Powered by</span>
+              <LockIcon size={12} />
+              <span>Powered by</span>
               <span className="stripe-word">Stripe</span>
             </div>
           </>
         ) : (
           <div className="zelle-card glass-card">
-            <div className="zelle-logo">💚 Zelle</div>
+            <div className="zelle-logo">Zelle</div>
             <p className="zelle-instruction">Send your donation to:</p>
             <div className="zelle-phone">{ZELLE_PHONE}</div>
             <a
@@ -1542,7 +1553,7 @@ export default function App() {
                 e.preventDefault()
               }}
             >
-              Open Zelle App →
+              Open Zelle App
             </a>
             <p className="zelle-note">Or open your banking app → Zelle → send to the number above</p>
             {s.customAmount && parseFloat(s.customAmount) > 0 && (
@@ -1564,7 +1575,7 @@ export default function App() {
                 resetPushka()
               }}
             >
-              I SENT IT ✓
+              I SENT IT
             </button>
           </div>
         )}
@@ -1594,7 +1605,7 @@ export default function App() {
         <Nav title="FAQ" shareToast={s.shareToast} set={set} prestige={s.prestige} streak={s.streak} prestigeNext={s.prestigeNext} prestigeAtMax={s.prestigeAtMax} totalPersonal={s.totalPersonal} />
         <div className="page-content">
           <div className="glass-card" style={{ marginBottom: 8 }}>
-            <div className="card-title">❓ Frequently Asked Questions</div>
+            <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 7 }}><QuestionIcon size={17} /> Frequently Asked Questions</div>
             <p style={{ color: 'var(--muted)', fontSize: 13, marginTop: 4 }}>Everything you need to know about your pushka.</p>
           </div>
           {faqs.map((faq, i) => <FaqItem key={i} q={faq.q} a={faq.a} />)}
@@ -1686,7 +1697,7 @@ export default function App() {
               </div>
 
               <div className="settings-notice">
-                ✅ ${s.recurringAmount} will be added to your pushka {s.recurringFrequency === 'weekly' ? 'every week' : s.recurringFrequency === 'monthly' ? 'every month' : 'every Erev Shabbat'} — we'll remind you when it's due
+                ${s.recurringAmount} will be added to your pushka {s.recurringFrequency === 'weekly' ? 'every week' : s.recurringFrequency === 'monthly' ? 'every month' : 'every Erev Shabbat'} — we'll remind you when it's due
                 {!s.user && ' (sign in to save this setting)'}
               </div>
             </>
@@ -1729,7 +1740,7 @@ export default function App() {
 
           {s.autoPayEnabled && (
             <div className="settings-notice">
-              ✓ Payment screen opens automatically when your pushka hits ${s.autoPayThreshold}
+              Payment screen opens automatically when your pushka hits ${s.autoPayThreshold}
             </div>
           )}
         </div>
@@ -1781,7 +1792,7 @@ export default function App() {
               </div>
 
               <div className="settings-notice">
-                ✓ You'll get a reminder every Tuesday & Friday at {s.reminderTime} — plus a special nudge on Erev Shabbat and when your pushka is full
+                You'll get a reminder every Tuesday & Friday at {s.reminderTime} — plus a special nudge on Erev Shabbat and when your pushka is full
               </div>
             </>
           )}
@@ -1963,8 +1974,8 @@ export default function App() {
 
         <div className="glass-card settings-card">
           <div className="settings-section-title"><DocumentIcon size={17} /> Legal &amp; Support</div>
-          <a href="/privacy" target="_blank" rel="noreferrer" style={{ display: 'block', color: 'var(--gold)', padding: '10px 0', fontSize: 14, borderBottom: '1px solid var(--border)', textDecoration: 'none' }}>Privacy Policy →</a>
-          <a href="/support" target="_blank" rel="noreferrer" style={{ display: 'block', color: 'var(--gold)', padding: '10px 0', fontSize: 14, textDecoration: 'none' }}>Support →</a>
+          <a href="/privacy" target="_blank" rel="noreferrer" style={{ display: 'block', color: 'var(--gold)', padding: '10px 0', fontSize: 14, borderBottom: '1px solid var(--border)', textDecoration: 'none' }}>Privacy Policy</a>
+          <a href="/support" target="_blank" rel="noreferrer" style={{ display: 'block', color: 'var(--gold)', padding: '10px 0', fontSize: 14, textDecoration: 'none' }}>Support</a>
         </div>
 
         {s.user && (
@@ -1986,6 +1997,7 @@ export default function App() {
                 } catch {}
                 await supabase.auth.signOut()
                 localStorage.removeItem('pushka_state')
+                cloudLoadedRef.current = false
                 set({ user: null, pushkaBalance: 0, pileCoins: [], pendingPayment: 0, donations: [], streak: 0, totalPersonal: 0, ...getPrestige(0) })
               }}
             >
@@ -2001,7 +2013,7 @@ export default function App() {
   // ── ADMIN SCREEN ──
   // FIX #1 — admin access gated by email only (no client-side password); RLS restricts DB access
   if (s.screen === 'admin' && s.user?.email !== 'adlaber@gmail.com') {
-    return <div className="app forest-bg"><Menu menuOpen={s.menuOpen} user={s.user} set={set} onSignOut={handleSignOut} /><Nav title="Admin" shareToast={s.shareToast} set={set} /><div className="page-content"><div className="glass-card" style={{textAlign:'center',padding:32}}><div style={{fontSize:48}}>🔒</div><div className="card-title" style={{marginTop:12}}>Access Denied</div></div></div></div>
+    return <div className="app forest-bg"><Menu menuOpen={s.menuOpen} user={s.user} set={set} onSignOut={handleSignOut} /><Nav title="Admin" shareToast={s.shareToast} set={set} /><div className="page-content"><div className="glass-card" style={{textAlign:'center',padding:32}}><div style={{display:'flex',justifyContent:'center',color:'var(--muted)'}}><LockIcon size={40} /></div><div className="card-title" style={{marginTop:12}}>Access Denied</div></div></div></div>
   }
   if (s.screen === 'admin') {
     // FIX #14 — query is now in a useEffect above, not inline here
@@ -2075,7 +2087,7 @@ export default function App() {
               { label: 'Vercel — Deployment', url: 'https://vercel.com/nechamalaber-rgbs-projects/grow-web' },
             ].map(({ label, url }) => (
               <a key={url} href={url} target="_blank" rel="noreferrer" className="admin-link">
-                {label} →
+                {label}
               </a>
             ))}
           </div>
@@ -2133,16 +2145,23 @@ export default function App() {
               <div key={u.user_id || i} className="history-row">
                 <div>
                   <div className="history-label">{u.full_name || u.email || 'Unknown'}</div>
-                  <div className="history-date">
-                    {u.email || 'No email'} · 🔥 {u.streak || 0} streak · {u.reminder_enabled ? '🔔' : '🔕'}
+                  <div className="history-date" style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                    <span>{u.email || 'No email'} ·</span>
+                    <FireIcon size={11} /> <span>{u.streak || 0} streak ·</span>
+                    <BellIcon size={11} style={{ opacity: u.reminder_enabled ? 1 : 0.35 }} />
                     {(() => {
                       if (!u.updated_at) return null
                       const last = new Date(u.updated_at)
                       const now = new Date()
                       const diffH = Math.floor((now - last) / 3600000)
                       const diffD = Math.floor(diffH / 24)
-                      const label = diffH < 1 ? '🟢 active now' : diffH < 24 ? `🟢 ${diffH}h ago` : diffD === 1 ? '🟡 yesterday' : `⚪ ${diffD}d ago`
-                      return ` · ${label}`
+                      const dotColor = diffH < 24 ? '#4ade80' : diffD === 1 ? '#eab308' : '#c8ccd2'
+                      const label = diffH < 1 ? 'active now' : diffH < 24 ? `${diffH}h ago` : diffD === 1 ? 'yesterday' : `${diffD}d ago`
+                      return (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          · <span style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, display: 'inline-block' }} /> {label}
+                        </span>
+                      )
                     })()}
                   </div>
                 </div>
@@ -2187,10 +2206,10 @@ export default function App() {
               This pushka helps make it all happen.
             </p>
             <div className="intro-what-we-do">
-              <div className="intro-activity">✡️ Shabbos & holiday celebrations</div>
-              <div className="intro-activity">👧 GROW girls programs & retreats</div>
-              <div className="intro-activity">🏡 Community events & family programs</div>
-              <div className="intro-activity">📖 Torah classes & Jewish education</div>
+              <div className="intro-activity">Shabbos & holiday celebrations</div>
+              <div className="intro-activity">GROW girls programs & retreats</div>
+              <div className="intro-activity">Community events & family programs</div>
+              <div className="intro-activity">Torah classes & Jewish education</div>
             </div>
             <div className="intro-steps">
               <div className="intro-step">
@@ -2201,7 +2220,7 @@ export default function App() {
                 </div>
               </div>
               <div className="intro-step">
-                <div className="intro-step-icon">💛</div>
+                <div className="intro-step-icon"><CardIcon size={20} /></div>
                 <div>
                   <div className="intro-step-title">Fill it &amp; donate</div>
                   <div className="intro-step-sub">Pay when ready — 100% goes to Chabad</div>
@@ -2209,7 +2228,7 @@ export default function App() {
               </div>
             </div>
             <button className="intro-btn" onClick={() => set({ seenIntro: true, screen: 'signup' })}>
-              Create Free Account →
+              Create Free Account
             </button>
             <button className="intro-skip" onClick={() => set({ seenIntro: true, screen: 'signin' })}>
               Already have an account? Sign in
@@ -2223,13 +2242,13 @@ export default function App() {
         {s.recurringDue && s.recurringEnabled && (
           <div className="recurring-banner">
             <div className="recurring-banner-text">
-              🔄 Your {s.recurringFrequency === 'shabbat' ? 'Erev Shabbat' : s.recurringFrequency} donation of <strong>${s.recurringAmount}</strong> is ready!
+              <RefreshIcon size={14} /> Your {s.recurringFrequency === 'shabbat' ? 'Erev Shabbat' : s.recurringFrequency} donation of <strong>${s.recurringAmount}</strong> is ready!
             </div>
             <div className="recurring-banner-btns">
               <button className="recurring-yes" onClick={() => {
                 set({ recurringDue: false })
                 dropCoins(s.recurringAmount)
-              }}>Drop Coins ✓</button>
+              }}>Drop Coins</button>
               <button className="recurring-skip" onClick={() => set({ recurringDue: false, lastRecurringDate: new Date().toISOString() })}>Skip</button>
             </div>
           </div>
@@ -2262,7 +2281,7 @@ export default function App() {
                   {message}
                 </span>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-                  <span style={{ fontSize: 10, color: 'var(--muted)' }}>by {deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ✎</span>
+                  <span style={{ fontSize: 10, color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>by {deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} <EditIcon size={10} /></span>
                   <input
                     type="date"
                     value={s.pushkaDeadline || new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)}
@@ -2308,7 +2327,7 @@ export default function App() {
           </div>
           <div style={{ padding: '10px 13px' }}>
             <button onClick={() => set({ screen: 'checkout', checkoutAmount: 18 })} style={{ background: 'linear-gradient(135deg, #c8922a, #f5c842)', color: '#1a0f00', border: 'none', borderRadius: 50, padding: '9px 0', fontSize: 12, fontWeight: 700, fontFamily: 'sans-serif', cursor: 'pointer', width: '100%' }}>
-              Give tzedakah in her memory →
+              Give tzedakah in her memory
             </button>
           </div>
         </div>
@@ -2403,7 +2422,7 @@ export default function App() {
 
         {s.thankYouAmount && (
           <div className="tysm-toast">
-            <div className="tysm-emoji">✨</div>
+            <div className="tysm-emoji"><SparkleIcon size={22} /></div>
             <div className="tysm-text">{s.thankYouMsg?.text || 'Thank you so much!'}</div>
             <div className="tysm-sub">{s.thankYouMsg ? s.thankYouMsg.sub(s.thankYouAmount) : `$${s.thankYouAmount} dropped in — you're amazing`}</div>
           </div>
@@ -2413,7 +2432,7 @@ export default function App() {
           <div className="full-banner-home">
             <div className="full-banner-text">Pushka is full! Ready to donate?</div>
             <div className="full-banner-actions">
-              <button className="full-banner-btn primary" onClick={() => set({ screen: 'checkout' })}>Donate Now →</button>
+              <button className="full-banner-btn primary" onClick={() => set({ screen: 'checkout' })}>Donate Now</button>
               <button className="full-banner-btn" onClick={() => set({ screen: 'settings' })}>Change Goal</button>
             </div>
           </div>
@@ -2438,7 +2457,6 @@ export default function App() {
         {!s.user && (
           <button className="signin-prompt" onClick={() => set({ screen: 'signup' })}>
             <span>Create a free account to start donating</span>
-            <span className="signin-prompt-arrow">→</span>
           </button>
         )}
         <div className="amount-grid home-amounts">
@@ -2482,7 +2500,7 @@ export default function App() {
           <div className="auth-sheet-title">Join My Grow Pushka</div>
           <div className="auth-sheet-sub">Track your tzedakah and donate to Jewish Greenbush Chabad</div>
           <button className="auth-sheet-btn primary" onClick={() => set({ showAuthSheet: false, screen: 'signup' })}>
-            Create Free Account →
+            Create Free Account
           </button>
           <button className="auth-sheet-btn secondary" onClick={() => set({ showAuthSheet: false, screen: 'signin' })}>
             I already have an account
