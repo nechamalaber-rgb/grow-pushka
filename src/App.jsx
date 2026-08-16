@@ -305,7 +305,7 @@ const initialState = {
   autoPayThreshold: 180,
   reminderEnabled: true,
   reminderTime: '09:00',
-  reminderFrequency: '2x-week',
+  reminderFrequency: 'daily',
   reminderError: '',  // FIX #21
 
   // Recurring payments
@@ -1832,7 +1832,7 @@ export default function App() {
           <div className="setting-row">
             <div>
               <div className="setting-label">Reminders</div>
-              <div className="setting-sub">{s.reminderFrequency === 'daily' ? 'Every day' : 'Twice a week'}, plus when your pushka is full</div>
+              <div className="setting-sub">Every day at 9:00 AM</div>
             </div>
             <button
               className={`toggle ${s.reminderEnabled ? 'on' : ''}`}
@@ -1869,41 +1869,9 @@ export default function App() {
           </div>
 
           {s.reminderEnabled && (
-            <>
-              <div className="setting-row" style={{ marginTop: 16 }}>
-                <div className="setting-label">Reminder time</div>
-                <input
-                  type="time"
-                  className="time-input"
-                  value={s.reminderTime}
-                  onChange={e => set({ reminderTime: e.target.value })}
-                />
-              </div>
-
-              <div className="setting-row" style={{ marginTop: 16 }}>
-                <div className="setting-label">Frequency</div>
-                <div className="settings-amount-row">
-                  <button
-                    className={`settings-chip ${s.reminderFrequency !== 'daily' ? 'active' : ''}`}
-                    onClick={() => set({ reminderFrequency: '2x-week' })}
-                  >
-                    Twice a week
-                  </button>
-                  <button
-                    className={`settings-chip ${s.reminderFrequency === 'daily' ? 'active' : ''}`}
-                    onClick={() => set({ reminderFrequency: 'daily' })}
-                  >
-                    Every day
-                  </button>
-                </div>
-              </div>
-
-              <div className="settings-notice">
-                {s.reminderFrequency === 'daily'
-                  ? <>You'll get a reminder every day at {s.reminderTime} — plus a special nudge on Erev Shabbat and when your pushka is full</>
-                  : <>You'll get a reminder every Tuesday & Friday at {s.reminderTime} — plus a special nudge on Erev Shabbat and when your pushka is full</>}
-              </div>
-            </>
+            <div className="settings-notice">
+              You'll get a reminder every day at 9:00 AM — plus a special nudge on Erev Shabbat and when your pushka is full
+            </div>
           )}
         </div>
 

@@ -67,23 +67,6 @@ function buildEmailShell({ emoji, verse, color1, color2, bodyHtml, footerExtra =
 // Default schedule: Tuesday (2) and Friday (5). Users who opted into 'daily'
 // get every day instead. Either way it also fires any day the pushka is
 // full or close to full, regardless of frequency setting.
-function shouldSendNow(reminderTime, pushkaFull, pushkaClose, reminderFrequency) {
-  const now = new Date();
-  const currentUTCMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
-  const [targetHour, targetMinute] = (reminderTime || '13:00').split(':').map(Number);
-  const targetUTCMinutes = targetHour * 60 + targetMinute;
-
-  const windowStart = Math.floor(currentUTCMinutes / 30) * 30;
-  const windowEnd = windowStart + 30;
-  if (targetUTCMinutes < windowStart || targetUTCMinutes >= windowEnd) return false;
-
-  if (pushkaFull || pushkaClose) return true;
-  if (reminderFrequency === 'daily') return true;
-
-  const utcDay = now.getUTCDay();
-  return utcDay === 2 || utcDay === 5;
-}
-
 function getEmailContent(pushkaFull, pushkaClose, balance, goal, percent, firstName) {
   const name = firstName || 'Friend';
 
@@ -156,6 +139,41 @@ function getEmailContent(pushkaFull, pushkaClose, balance, goal, percent, firstN
   }
 }
 
+// Short, punchy copy for the OS notification tray — deliberately not just
+// the email subject/body, which are written for a full inbox message
+function getPushContent(pushkaFull, pushkaClose, balance, goal, percent, firstName) {
+  const name = firstName || 'Friend';
+
+  if (pushkaFull) {
+    return {
+      title: `🎉 Your pushka is full, ${name}!`,
+      body: `Time to send $${goal} to Jewish Greenbush Chabad.`,
+    };
+  }
+
+  if (pushkaClose) {
+    return {
+      title: `✨ So close, ${name}!`,
+      body: `${percent}% full — just $${(goal - balance).toFixed(0)} left to reach your goal.`,
+    };
+  }
+
+  const isFriday = new Date().getUTCDay() === 5;
+  if (isFriday) {
+    return {
+      title: '🕯️ Shabbat is almost here',
+      body: `Add a coin before you light candles tonight, ${name}.`,
+    };
+  }
+
+  const options = [
+    { title: '🪙 A little goes a long way', body: `Your pushka is ${percent}% full — add a coin today, ${name}.` },
+    { title: '🪙 Never pass up a mitzvah', body: `Your pushka is waiting, ${name}. One more coin today?` },
+    { title: '🪙 Your pushka is waiting', body: `${percent}% full, ${name} — keep the momentum going.` },
+  ];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
 async function getTodayHebrewDate() {
   const now = new Date();
   const url = `https://www.hebcal.com/converter?cfg=json&gy=${now.getUTCFullYear()}&gm=${now.getUTCMonth()+1}&gd=${now.getUTCDate()}&g2h=1`;
@@ -224,7 +242,7 @@ export default async function handler(req, res) {
 
     let query = supabase
       .from('user_data')
-      .select('user_id, reminder_time, reminder_frequency, pushka_balance, pushka_goal, reminder_enabled, last_reminded_at, push_subscription')
+      .select('user_id, pushka_balance, pushka_goal, reminder_enabled, last_reminded_at, push_subscription')
       .neq('reminder_enabled', false);
     if (targetUserId) query = query.eq('user_id', targetUserId);
 
@@ -243,7 +261,9 @@ export default async function handler(req, res) {
       const pushkaClose = !pushkaFull && goal > 0 && (balance / goal) * 100 >= CLOSE_THRESHOLD_PERCENT;
 
       const force = req.query?.force === 'true';
-      if (!force && !shouldSendNow(row.reminder_time, pushkaFull, pushkaClose, row.reminder_frequency)) continue;
+      // Everyone gets a reminder every time the cron runs (fixed daily 9:00 AM
+      // ET) — no per-user custom time; the last-23h dedup below is what
+      // actually keeps this to once a day per person.
 
       // Deduplicate: skip if already emailed within 23 hours
       if (row.last_reminded_at) {
@@ -307,11 +327,13 @@ export default async function handler(req, res) {
         errors.push({ email, error: emailErr.message });
       }
 
-      // Real background push notification, alongside the email
+      // Real background push notification, alongside the email — its own
+      // short-form copy, not just the email subject/body
       if (row.push_subscription) {
+        const push = getPushContent(pushkaFull, pushkaClose, balance, goal, percent, firstName);
         await sendPush(row.push_subscription, {
-          title: content.subject,
-          body: content.message.split('\n\n')[0],
+          title: push.title,
+          body: push.body,
           url: SITE_URL,
         }, row.user_id);
       }
