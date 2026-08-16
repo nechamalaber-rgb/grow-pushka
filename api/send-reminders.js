@@ -64,9 +64,10 @@ function buildEmailShell({ emoji, verse, color1, color2, bodyHtml, footerExtra =
   `;
 }
 
-// Fixed schedule: Tuesday (2) and Friday (5)
-// Also fires any day if pushka is full or close to full
-function shouldSendNow(reminderTime, pushkaFull, pushkaClose) {
+// Default schedule: Tuesday (2) and Friday (5). Users who opted into 'daily'
+// get every day instead. Either way it also fires any day the pushka is
+// full or close to full, regardless of frequency setting.
+function shouldSendNow(reminderTime, pushkaFull, pushkaClose, reminderFrequency) {
   const now = new Date();
   const currentUTCMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
   const [targetHour, targetMinute] = (reminderTime || '13:00').split(':').map(Number);
@@ -76,9 +77,11 @@ function shouldSendNow(reminderTime, pushkaFull, pushkaClose) {
   const windowEnd = windowStart + 30;
   if (targetUTCMinutes < windowStart || targetUTCMinutes >= windowEnd) return false;
 
+  if (pushkaFull || pushkaClose) return true;
+  if (reminderFrequency === 'daily') return true;
+
   const utcDay = now.getUTCDay();
-  // Send if pushka is full or close to full (any day) or it's Tuesday/Friday
-  return pushkaFull || pushkaClose || utcDay === 2 || utcDay === 5;
+  return utcDay === 2 || utcDay === 5;
 }
 
 function getEmailContent(pushkaFull, pushkaClose, balance, goal, percent, firstName) {
@@ -221,7 +224,7 @@ export default async function handler(req, res) {
 
     let query = supabase
       .from('user_data')
-      .select('user_id, reminder_time, pushka_balance, pushka_goal, reminder_enabled, last_reminded_at, push_subscription')
+      .select('user_id, reminder_time, reminder_frequency, pushka_balance, pushka_goal, reminder_enabled, last_reminded_at, push_subscription')
       .neq('reminder_enabled', false);
     if (targetUserId) query = query.eq('user_id', targetUserId);
 
@@ -240,7 +243,7 @@ export default async function handler(req, res) {
       const pushkaClose = !pushkaFull && goal > 0 && (balance / goal) * 100 >= CLOSE_THRESHOLD_PERCENT;
 
       const force = req.query?.force === 'true';
-      if (!force && !shouldSendNow(row.reminder_time, pushkaFull, pushkaClose)) continue;
+      if (!force && !shouldSendNow(row.reminder_time, pushkaFull, pushkaClose, row.reminder_frequency)) continue;
 
       // Deduplicate: skip if already emailed within 23 hours
       if (row.last_reminded_at) {

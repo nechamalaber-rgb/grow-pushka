@@ -617,15 +617,22 @@ export default function App() {
     return outputArray
   }
 
+  // FIX #29 — returns a real result instead of silently swallowing every
+  // failure, so the UI can actually tell the user what happened
   const subscribeToPush = useCallback(async (userId) => {
     try {
-      if (!userId) return
-      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
-      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
+      if (!userId) return { ok: false, reason: 'You need to be signed in for push reminders.' }
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        return { ok: false, reason: "This device doesn't support push notifications — you'll still get email reminders." }
+      }
+      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
+        return { ok: false, reason: 'Notification permission was not granted.' }
+      }
       const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
-      if (!vapidKey) return
+      if (!vapidKey) return { ok: false, reason: 'Push notifications are not configured yet.' }
 
       const reg = await navigator.serviceWorker.register('/sw.js')
+      await navigator.serviceWorker.ready
       let sub = await reg.pushManager.getSubscription()
       if (!sub) {
         sub = await reg.pushManager.subscribe({
@@ -633,9 +640,12 @@ export default function App() {
           applicationServerKey: urlBase64ToUint8Array(vapidKey),
         })
       }
-      await supabase.from('user_data').update({ push_subscription: sub.toJSON() }).eq('user_id', userId)
+      const { error } = await supabase.from('user_data').update({ push_subscription: sub.toJSON() }).eq('user_id', userId)
+      if (error) return { ok: false, reason: "Couldn't save your notification settings — try again." }
+      return { ok: true }
     } catch (e) {
       console.error('Push subscription failed', e)
+      return { ok: false, reason: e?.message || 'Something went wrong turning on notifications.' }
     }
   }, [])
 
@@ -1810,12 +1820,19 @@ export default function App() {
         <div className="glass-card settings-card">
           <div className="settings-section-title"><BellIcon size={17} /> Reminders</div>
           <p className="settings-desc">Get a notification reminding you to drop coins into your pushka — no automatic charges, just a friendly nudge.</p>
-          {s.reminderError && <div className="auth-error" style={{marginBottom:8}}>{s.reminderError}</div>}
+          {s.reminderError && (
+            <div
+              className="auth-error"
+              style={s.reminderError.startsWith('Reminders on') ? { background: '#dcfce7', borderColor: '#16a34a', color: '#14532d', marginBottom: 8 } : { marginBottom: 8 }}
+            >
+              {s.reminderError}
+            </div>
+          )}
 
           <div className="setting-row">
             <div>
               <div className="setting-label">Reminders</div>
-              <div className="setting-sub">Twice a week, plus when your pushka is full</div>
+              <div className="setting-sub">{s.reminderFrequency === 'daily' ? 'Every day' : 'Twice a week'}, plus when your pushka is full</div>
             </div>
             <button
               className={`toggle ${s.reminderEnabled ? 'on' : ''}`}
@@ -1824,7 +1841,10 @@ export default function App() {
                 set({ reminderEnabled: enabling, reminderError: '' })
                 if (!enabling) return
                 try {
-                  if (typeof Notification === 'undefined') return
+                  if (typeof Notification === 'undefined') {
+                    set({ reminderError: "This device doesn't support push notifications, but we'll still email you." })
+                    return
+                  }
                   if (Notification.permission === 'denied') {
                     set({ reminderEnabled: false, reminderError: 'Notifications are blocked. Enable them in your device settings.' })
                     return
@@ -1834,10 +1854,13 @@ export default function App() {
                     permission = await Notification.requestPermission().catch(() => 'default')
                   }
                   if (permission === 'granted') {
-                    subscribeToPush(s.user?.id)
+                    const result = await subscribeToPush(s.user?.id)
+                    set({ reminderError: result?.ok ? 'Reminders on — you\'ll get real notifications on this device.' : (result?.reason || 'Reminders on, but push may not work on this device — email reminders will still work.') })
+                  } else {
+                    set({ reminderError: "Notification permission wasn't granted — we'll still email you." })
                   }
-                } catch {
-                  // Notification API not supported on this device — reminder saves but won't push notify
+                } catch (e) {
+                  set({ reminderError: e?.message || 'Something went wrong turning on notifications.' })
                 }
               }}
             >
@@ -1857,8 +1880,28 @@ export default function App() {
                 />
               </div>
 
+              <div className="setting-row" style={{ marginTop: 16 }}>
+                <div className="setting-label">Frequency</div>
+                <div className="settings-amount-row">
+                  <button
+                    className={`settings-chip ${s.reminderFrequency !== 'daily' ? 'active' : ''}`}
+                    onClick={() => set({ reminderFrequency: '2x-week' })}
+                  >
+                    Twice a week
+                  </button>
+                  <button
+                    className={`settings-chip ${s.reminderFrequency === 'daily' ? 'active' : ''}`}
+                    onClick={() => set({ reminderFrequency: 'daily' })}
+                  >
+                    Every day
+                  </button>
+                </div>
+              </div>
+
               <div className="settings-notice">
-                You'll get a reminder every Tuesday & Friday at {s.reminderTime} — plus a special nudge on Erev Shabbat and when your pushka is full
+                {s.reminderFrequency === 'daily'
+                  ? <>You'll get a reminder every day at {s.reminderTime} — plus a special nudge on Erev Shabbat and when your pushka is full</>
+                  : <>You'll get a reminder every Tuesday & Friday at {s.reminderTime} — plus a special nudge on Erev Shabbat and when your pushka is full</>}
               </div>
             </>
           )}
