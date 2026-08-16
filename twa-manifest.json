@@ -21,8 +21,8 @@
     "path": "./android-new.keystore",
     "alias": "growpushka"
   },
-  "appVersionName": "25",
-  "appVersionCode": 25,
+  "appVersionName": "28",
+  "appVersionCode": 28,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://www.buildbitachon.org/manifest.json",
@@ -42,5 +42,5 @@
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "displayOverride": [],
-  "appVersion": "25"
+  "appVersion": "28"
 }
