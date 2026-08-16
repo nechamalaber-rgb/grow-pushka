@@ -529,6 +529,8 @@ export default function App() {
   const saveTimerRef = useRef(null)
   const cloudLoadedRef = useRef(false)
   const timersRef = useRef([])
+  const isDroppingRef = useRef(false)
+  const pendingDropQueueRef = useRef(0)
   const isRecoveryRef = useRef(false)
   const stateRef = useRef(s)
   stateRef.current = s
@@ -600,6 +602,41 @@ export default function App() {
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
     }, 2000)
+  }, [])
+
+  // FIX #27 — real background push notifications (service worker + server-sent
+  // push), replacing the old client-side setTimeout that only fired while the
+  // app was open. urlBase64ToUint8Array is the standard Web Push boilerplate
+  // for turning the VAPID public key into the format PushManager expects.
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4)
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+    const rawData = window.atob(base64)
+    const outputArray = new Uint8Array(rawData.length)
+    for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i)
+    return outputArray
+  }
+
+  const subscribeToPush = useCallback(async (userId) => {
+    try {
+      if (!userId) return
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
+      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
+      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
+      if (!vapidKey) return
+
+      const reg = await navigator.serviceWorker.register('/sw.js')
+      let sub = await reg.pushManager.getSubscription()
+      if (!sub) {
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidKey),
+        })
+      }
+      await supabase.from('user_data').update({ push_subscription: sub.toJSON() }).eq('user_id', userId)
+    } catch (e) {
+      console.error('Push subscription failed', e)
+    }
   }, [])
 
   // FIX #6 — loadFromCloud wrapped in useCallback; only depends on stable refs
@@ -691,6 +728,14 @@ export default function App() {
     }
     fetchTotal()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-migrate existing users who already had reminders on to real push,
+  // so they don't have to manually re-toggle the setting to get it
+  useEffect(() => {
+    if (!s.user?.id || !s.reminderEnabled) return
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
+    subscribeToPush(s.user.id)
+  }, [s.user?.id, s.reminderEnabled, subscribeToPush])
 
   // Schedule browser notification for reminders
   useEffect(() => {
@@ -1049,7 +1094,21 @@ export default function App() {
   // ── DROP COINS ──
   const dropCoins = (amount) => {
     if (!s.user) return set({ screen: 'signup' })
-    if (s.isDropping) return
+    // Nothing to add once already at/over goal — bail before playing any
+    // animation instead of showing "$1 dropped" for a coin that never landed
+    if (stateRef.current.pushkaBalance >= stateRef.current.pushkaGoal) return
+    // FIX #28 — isDroppingRef (not state) so this guard is checked
+    // synchronously; the old s.isDropping read from the render closure could
+    // still be stale across rapid taps in the same tick, letting overlapping
+    // drops through that then raced on stale state and silently lost coins.
+    // Taps that land while an animation is already playing are queued
+    // (not dropped) so every tap still counts once the current one finishes.
+    if (isDroppingRef.current) {
+      pendingDropQueueRef.current += amount
+      return
+    }
+    isDroppingRef.current = true
+
     const numCoins = visualCoinCount(amount)
     const coins = Array.from({ length: numCoins }, (_, i) => ({
       id: Date.now() + i,
@@ -1060,22 +1119,21 @@ export default function App() {
 
     coins.forEach((_, i) => playClink(i * 110 + 620))
 
-    // FIX #7 — cap balance at goal to prevent out-of-bounds pile positions
-    const newBalance = Math.min(s.pushkaBalance + amount, s.pushkaGoal)
-    const newPending = s.pendingPayment + amount
-    const goalHit = newBalance >= s.pushkaGoal
-    const autoPayHit = s.autoPayEnabled && goalHit
-
-    const newNumPile = Math.min(newBalance > 0 ? Math.max(1, Math.round((newBalance / s.pushkaGoal) * PILE_POSITIONS.length)) : 0, PILE_POSITIONS.length)
-    const currentNumPile = s.pileCoins.length
-    const extraPileCoins = []
-    for (let i = currentNumPile; i < newNumPile; i++) {
-      extraPileCoins.push({ id: `pile-${i}-${Date.now()}`, posIdx: i, isNew: true })
-    }
-
+    // FIX #28 — every value that depends on current balance/pile is now
+    // computed from `prev` inside the functional update, so concurrent
+    // drops always compound correctly instead of overwriting each other
     setS(prev => {
       const today = new Date().toDateString()
       const isNewDay = !prev.lastStreakDate || new Date(prev.lastStreakDate).toDateString() !== today
+      // FIX #7 — cap balance at goal to prevent out-of-bounds pile positions
+      const newBalance = Math.min(prev.pushkaBalance + amount, prev.pushkaGoal)
+      const newPending = prev.pendingPayment + amount
+      const newNumPile = Math.min(newBalance > 0 ? Math.max(1, Math.round((newBalance / prev.pushkaGoal) * PILE_POSITIONS.length)) : 0, PILE_POSITIONS.length)
+      const currentNumPile = prev.pileCoins.length
+      const extraPileCoins = []
+      for (let i = currentNumPile; i < newNumPile; i++) {
+        extraPileCoins.push({ id: `pile-${i}-${Date.now()}-${i}`, posIdx: i, isNew: true })
+      }
       return {
         ...prev,
         selectedAmount: amount,
@@ -1095,20 +1153,33 @@ export default function App() {
     const duration = numCoins * 110 + 800
     // FIX #16 — register timers so they're cleaned up on unmount
     coinTimerRef.current = addTimer(() => {
+      isDroppingRef.current = false
       setS(prev => ({
         ...prev,
         fallingCoins: [],
         isDropping: false,
         thankYouAmount: amount,
         pileCoins: prev.pileCoins.map(c => ({ ...c, isNew: false })),
-        pushkaFull: goalHit,
+        pushkaFull: prev.pushkaBalance >= prev.pushkaGoal,
       }))
       const msg = COIN_MESSAGES[Math.floor(Math.random() * COIN_MESSAGES.length)]
       setS(prev => ({ ...prev, thankYouMsg: msg }))
       confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, colors: ['#C8922A', '#F5EDD8', '#3b6fd4', '#ffe878'] })
       addTimer(() => setS(prev => ({ ...prev, thankYouAmount: null, thankYouMsg: null, selectedAmount: null })), 5000)
-      // Only auto-open checkout if user explicitly turned on auto-pay
-      if (autoPayHit) addTimer(() => handleCheckout(newBalance), 400)
+      // FIX #28 — re-derive auto-pay from the latest state (via stateRef)
+      // instead of a value captured at click-time, which could be stale
+      // now that rapid taps correctly compound the balance
+      if (stateRef.current.autoPayEnabled && stateRef.current.pushkaBalance >= stateRef.current.pushkaGoal) {
+        addTimer(() => handleCheckout(stateRef.current.pushkaBalance), 400)
+      }
+      // FIX #28 — process any taps that landed while this animation was
+      // playing, so a burst of rapid clicks all end up counted instead of
+      // being silently dropped once the guard above started blocking them
+      if (pendingDropQueueRef.current > 0) {
+        const queued = pendingDropQueueRef.current
+        pendingDropQueueRef.current = 0
+        dropCoins(queued)
+      }
     }, duration)
   }
 
@@ -1719,7 +1790,7 @@ export default function App() {
           <div className="setting-row">
             <div>
               <div className="setting-label">Auto-open checkout when full</div>
-              <div className="setting-sub">Jumps to payment screen when balance hits ${s.autoPayThreshold}</div>
+              <div className="setting-sub">Jumps to payment screen when balance hits ${s.pushkaGoal}</div>
             </div>
             <button
               className={`toggle ${s.autoPayEnabled ? 'on' : ''}`}
@@ -1730,25 +1801,8 @@ export default function App() {
           </div>
 
           {s.autoPayEnabled && (
-            <div className="setting-row" style={{ marginTop: 16 }}>
-              <div className="setting-label">Trigger amount</div>
-              <div className="settings-amount-row">
-                {[90, 180, 360, 500].map(amt => (
-                  <button
-                    key={amt}
-                    className={`settings-chip ${s.autoPayThreshold === amt ? 'active' : ''}`}
-                    onClick={() => set({ autoPayThreshold: amt })}
-                  >
-                    ${amt}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {s.autoPayEnabled && (
             <div className="settings-notice">
-              Payment screen opens automatically when your pushka hits ${s.autoPayThreshold}
+              Payment screen opens automatically when your pushka hits ${s.pushkaGoal}
             </div>
           )}
         </div>
@@ -1760,12 +1814,12 @@ export default function App() {
 
           <div className="setting-row">
             <div>
-              <div className="setting-label">Daily reminders</div>
-              <div className="setting-sub">Gentle daily reminder</div>
+              <div className="setting-label">Reminders</div>
+              <div className="setting-sub">Twice a week, plus when your pushka is full</div>
             </div>
             <button
               className={`toggle ${s.reminderEnabled ? 'on' : ''}`}
-              onClick={() => {
+              onClick={async () => {
                 const enabling = !s.reminderEnabled
                 set({ reminderEnabled: enabling, reminderError: '' })
                 if (!enabling) return
@@ -1775,8 +1829,12 @@ export default function App() {
                     set({ reminderEnabled: false, reminderError: 'Notifications are blocked. Enable them in your device settings.' })
                     return
                   }
-                  if (Notification.permission === 'default') {
-                    Promise.resolve(Notification.requestPermission()).catch(() => {})
+                  let permission = Notification.permission
+                  if (permission === 'default') {
+                    permission = await Notification.requestPermission().catch(() => 'default')
+                  }
+                  if (permission === 'granted') {
+                    subscribeToPush(s.user?.id)
                   }
                 } catch {
                   // Notification API not supported on this device — reminder saves but won't push notify
