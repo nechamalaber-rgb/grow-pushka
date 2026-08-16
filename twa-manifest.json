@@ -1,7 +1,7 @@
 {
   "packageId": "buildbitachon.org",
   "host": "www.buildbitachon.org",
-  "name": "My Grow Pushka",
+  "name": "My Pushka",
   "launcherName": "My Pushka",
   "display": "standalone",
   "themeColor": "#0F1629",
@@ -21,8 +21,8 @@
     "path": "./android-new.keystore",
     "alias": "growpushka"
   },
-  "appVersionName": "28",
-  "appVersionCode": 28,
+  "appVersionName": "29",
+  "appVersionCode": 29,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://www.buildbitachon.org/manifest.json",
@@ -42,5 +42,5 @@
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "displayOverride": [],
-  "appVersion": "28"
+  "appVersion": "29"
 }

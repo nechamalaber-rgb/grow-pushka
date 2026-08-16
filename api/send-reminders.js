@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
+import webpush from 'web-push';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -7,6 +8,25 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+// FIX #27 — real background push notifications alongside the existing emails
+const VAPID_PUBLIC_KEY = (process.env.VAPID_PUBLIC_KEY || '').trim();
+const VAPID_PRIVATE_KEY = (process.env.VAPID_PRIVATE_KEY || '').trim();
+if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails('mailto:schneurlaber@gmail.com', VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+}
+
+async function sendPush(subscription, payload, userId) {
+  if (!subscription || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return;
+  try {
+    await webpush.sendNotification(subscription, JSON.stringify(payload));
+  } catch (err) {
+    // 410/404 means the subscription is dead (uninstalled, permission revoked, etc.)
+    if (err.statusCode === 410 || err.statusCode === 404) {
+      await supabase.from('user_data').update({ push_subscription: null }).eq('user_id', userId).catch(() => {});
+    }
+  }
+}
 
 // Close-to-full threshold — triggers the "almost there" nudge below 100%
 const CLOSE_THRESHOLD_PERCENT = 80;
@@ -201,7 +221,7 @@ export default async function handler(req, res) {
 
     let query = supabase
       .from('user_data')
-      .select('user_id, reminder_time, pushka_balance, pushka_goal, reminder_enabled, last_reminded_at')
+      .select('user_id, reminder_time, pushka_balance, pushka_goal, reminder_enabled, last_reminded_at, push_subscription')
       .neq('reminder_enabled', false);
     if (targetUserId) query = query.eq('user_id', targetUserId);
 
@@ -282,6 +302,15 @@ export default async function handler(req, res) {
         sent++;
       } catch (emailErr) {
         errors.push({ email, error: emailErr.message });
+      }
+
+      // Real background push notification, alongside the email
+      if (row.push_subscription) {
+        await sendPush(row.push_subscription, {
+          title: content.subject,
+          body: content.message.split('\n\n')[0],
+          url: SITE_URL,
+        }, row.user_id);
       }
     }
 
