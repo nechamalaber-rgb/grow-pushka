@@ -1181,7 +1181,10 @@ export default function App() {
       user_id: s.user?.id || null,
       user_email: s.user?.email || null,
       label: CAUSES.find(c => c.id === s.donationCause)?.name || 'Donation',
-      status: method === 'zelle' ? 'pending_verification' : 'confirmed',
+      // FIX #26 — RLS now rejects any client insert that isn't pending_verification
+      // (prevents anyone from inserting a pre-confirmed fake donation via the
+      // public anon key); admin approves via the Verify button in /admin
+      status: 'pending_verification',
       notes: s.donationNote || null,
     })
     // Notify admin with notes included
@@ -2116,11 +2119,11 @@ export default function App() {
             ))}
             {pendingDonations.length > 0 && (
               <>
-                <div style={{ fontSize: 12, color: '#ff8c69', fontWeight: 600, marginTop: 12, marginBottom: 4 }}>⏳ Pending Zelle Verification</div>
+                <div style={{ fontSize: 12, color: '#ff8c69', fontWeight: 600, marginTop: 12, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 5 }}><ClockIcon size={13} /> Pending Verification</div>
                 {pendingDonations.map((d, i) => (
                   <div key={d.id || i} className="history-row" style={{ opacity: 0.9, alignItems: 'center', gap: 10 }}>
                     <div>
-                      <div className="history-label" style={{ color: '#ff8c69' }}>{d.label}</div>
+                      <div className="history-label" style={{ color: '#ff8c69' }}>{d.label} <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: d.method === 'card' ? '#4ade80' : '#ff8c69' }}>({d.method === 'card' ? 'Card — already charged' : 'Zelle — check bank'})</span></div>
                       <div className="history-date">{d.user_email || 'Guest'} · {new Date(d.created_at).toLocaleDateString()}{d.notes ? ` · "${d.notes}"` : ''}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
