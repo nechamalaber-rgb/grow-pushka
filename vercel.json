@@ -18,11 +18,5 @@
         { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" }
       ]
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/send-reminders",
-      "schedule": "0 13 * * *"
-    }
   ]
 }
