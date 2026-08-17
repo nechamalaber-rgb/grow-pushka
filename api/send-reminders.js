@@ -141,7 +141,7 @@ function getEmailContent(pushkaFull, pushkaClose, balance, goal, percent, firstN
 
 // Short, punchy copy for the OS notification tray — deliberately not just
 // the email subject/body, which are written for a full inbox message
-function getPushContent(pushkaFull, pushkaClose, balance, goal, percent, firstName) {
+function getPushContent(pushkaFull, pushkaClose, balance, goal, percent, firstName, streak) {
   const name = firstName || 'Friend';
 
   if (pushkaFull) {
@@ -166,11 +166,20 @@ function getPushContent(pushkaFull, pushkaClose, balance, goal, percent, firstNa
     };
   }
 
+  // Personalized options — one coin a day is the whole idea, so most
+  // variants say that explicitly, plus a streak-aware one when it applies
   const options = [
-    { title: '🪙 A little goes a long way', body: `Your pushka is ${percent}% full — add a coin today, ${name}.` },
-    { title: '🪙 Never pass up a mitzvah', body: `Your pushka is waiting, ${name}. One more coin today?` },
-    { title: '🪙 Your pushka is waiting', body: `${percent}% full, ${name} — keep the momentum going.` },
+    { title: '🪙 Just one coin today', body: `Even $1 counts, ${name} — your pushka is ${percent}% full.` },
+    { title: '🪙 A little goes a long way', body: `Give one coin a day, ${name} — you're already ${percent}% there.` },
+    { title: '🪙 Never pass up a mitzvah', body: `Your pushka is waiting, ${name}. One coin, one minute — that's it.` },
+    { title: '🪙 Your pushka is waiting', body: `${percent}% full, ${name} — one coin today keeps it moving.` },
   ];
+  if (streak > 0) {
+    options.push({
+      title: `🔥 ${streak}-day streak, ${name}!`,
+      body: `Drop a coin today to make it ${streak + 1} — don't break the chain.`,
+    });
+  }
   return options[Math.floor(Math.random() * options.length)];
 }
 
@@ -242,7 +251,7 @@ export default async function handler(req, res) {
 
     let query = supabase
       .from('user_data')
-      .select('user_id, pushka_balance, pushka_goal, reminder_enabled, last_reminded_at, push_subscription')
+      .select('user_id, pushka_balance, pushka_goal, reminder_enabled, last_reminded_at, push_subscription, streak')
       .neq('reminder_enabled', false);
     if (targetUserId) query = query.eq('user_id', targetUserId);
 
@@ -330,7 +339,7 @@ export default async function handler(req, res) {
       // Real background push notification, alongside the email — its own
       // short-form copy, not just the email subject/body
       if (row.push_subscription) {
-        const push = getPushContent(pushkaFull, pushkaClose, balance, goal, percent, firstName);
+        const push = getPushContent(pushkaFull, pushkaClose, balance, goal, percent, firstName, row.streak || 0);
         await sendPush(row.push_subscription, {
           title: push.title,
           body: push.body,
