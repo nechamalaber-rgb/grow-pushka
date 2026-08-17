@@ -16,7 +16,16 @@
   --border: rgba(30,80,104,0.12);
 }
 
-body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden; color: var(--text); }
+body {
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  color: var(--text);
+  /* On phones this is invisible (fully covered by .app). On wider screens
+     (tablets, Chrome OS, desktop browser) this is what actually shows
+     around the app "card" — a soft branded backdrop instead of flat color,
+     so a narrower app doesn't read as broken/unstyled on a big screen. */
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200,146,42,0.10) 0%, rgba(200,146,42,0) 55%), linear-gradient(180deg, #0F1629 0%, #1a2a42 100%);
+}
 
 .app {
   min-height: 100vh;
@@ -25,6 +34,17 @@ body { font-family: 'Inter', sans-serif; background: #eef4f7; overflow-x: hidden
   position: relative;
   overflow-x: hidden;
   background: linear-gradient(180deg, #deedf5 0%, #eef4f7 30%, #f5f8fa 100%);
+}
+
+@media (min-width: 600px) {
+  body { min-height: 100vh; display: flex; justify-content: center; padding: 32px 16px; }
+  .app {
+    border-radius: 28px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06);
+    min-height: calc(100vh - 64px);
+    max-height: 900px;
+    overflow-y: auto;
+  }
 }
 
 .forest-bg {
