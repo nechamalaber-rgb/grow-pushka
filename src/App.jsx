@@ -943,21 +943,34 @@ export default function App() {
   }
 
   const googleCallback = async ({ credential }) => {
-    const { data, error } = await supabase.auth.signInWithIdToken({
-      provider: 'google',
-      token: credential,
-    })
-    if (error) {
-      set({ authError: error.message })
-      return
-    }
-    if (data?.session?.user) {
-      set({ user: data.session.user, screen: 'home' })
-      // FIX #25 — must load explicitly: the onAuthStateChange listener's
-      // "same user, skip loadFromCloud" dedup check can race against the
-      // set() above and think this user's data is already loaded when
-      // it never was, leaving the user signed in with empty local data
-      loadFromCloud(data.session.user)
+    // FIX #30 — the whole thing is now wrapped: previously, if
+    // signInWithIdToken threw (e.g. a network blip switching between wifi/
+    // cellular, common on mobile) instead of returning a normal {error},
+    // there was no try/catch anywhere in this callback chain, so nothing
+    // caught it. The user would see literally nothing happen — no error,
+    // no navigation — indistinguishable from "the app just went back to
+    // the login screen" for someone who never left it in the first place.
+    try {
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: credential,
+      })
+      if (error) {
+        console.error('Google Sign-In failed:', error)
+        set({ authError: `Google Sign-In didn't go through (${error.message}). Please try again, or sign in with email/password below.` })
+        return
+      }
+      if (data?.session?.user) {
+        set({ user: data.session.user, screen: 'home' })
+        // FIX #25 — must load explicitly: the onAuthStateChange listener's
+        // "same user, skip loadFromCloud" dedup check can race against the
+        // set() above and think this user's data is already loaded when
+        // it never was, leaving the user signed in with empty local data
+        loadFromCloud(data.session.user)
+      }
+    } catch (e) {
+      console.error('Google Sign-In threw an exception:', e)
+      set({ authError: `Google Sign-In hit a connection problem (${e?.message || 'unknown error'}). Please check your connection and try again, or use email/password below.` })
     }
   }
 
