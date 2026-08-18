@@ -2,7 +2,7 @@ export default function Support() {
   return (
     <div style={{ maxWidth: 600, margin: '0 auto', padding: '40px 24px', fontFamily: 'sans-serif', color: '#1a1a2e', lineHeight: 1.7 }}>
       <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>Support</h1>
-      <p style={{ color: '#666', fontSize: 14, marginBottom: 32 }}>Jewish Greenbush Chabad — GROW Pushka App</p>
+      <p style={{ color: '#666', fontSize: 14, marginBottom: 32 }}>Jewish Greenbush Chabad — My Pushka App</p>
 
       <h2>Need Help?</h2>
       <p>We're here to help! Reach out to us and we'll get back to you as soon as possible.</p>

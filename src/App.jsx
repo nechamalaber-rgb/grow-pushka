@@ -398,7 +398,7 @@ function Menu({ menuOpen, user, set, onSignOut }) {
         <div className="menu-header">
           <div className="menu-avatar">{user ? <UserIcon size={20} /> : <CoinIcon size={20} />}</div>
           <div>
-            <div className="menu-app-name">GROW Pushka</div>
+            <div className="menu-app-name">My Pushka</div>
             <div className="menu-mode">
               {user ? (user.user_metadata?.full_name || user.email) : 'Guest Mode'}
             </div>
@@ -768,7 +768,7 @@ export default function App() {
         reminderTimerRef.current = setTimeout(() => {
           try {
             if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-              new Notification('GROW Pushka', {
+              new Notification('My Pushka', {
                 body: 'A little tzedakah goes a long way',
                 icon: '/favicon.ico',
               })
@@ -1352,7 +1352,7 @@ export default function App() {
         <div className="auth-screen">
           <div className="auth-logo">
             <div className="auth-logo-icon">צ</div>
-            <div className="auth-app-name">GROW Pushka</div>
+            <div className="auth-app-name">My Pushka</div>
           </div>
           <p className="auth-tagline">Your digital tzedakah box</p>
           <div className="auth-howit">
@@ -1424,7 +1424,7 @@ export default function App() {
       <div className="auth-screen">
         <div className="auth-logo">
           <div className="auth-logo-icon"><LockIcon size={30} /></div>
-          <div className="auth-app-name">GROW Pushka</div>
+          <div className="auth-app-name">My Pushka</div>
         </div>
         <h1 className="auth-title">Set New Password</h1>
         <p className="auth-sub" style={{ marginBottom: 24 }}>Choose a new password for your account.</p>
@@ -1454,7 +1454,7 @@ export default function App() {
       <div className="auth-screen">
         <div className="auth-logo">
           <div className="auth-logo-icon"><MailIcon size={30} /></div>
-          <div className="auth-app-name">GROW Pushka</div>
+          <div className="auth-app-name">My Pushka</div>
         </div>
         <h1 className="auth-title">Check Your Email</h1>
         <p className="auth-sub">We sent a confirmation link to</p>
@@ -2587,7 +2587,7 @@ export default function App() {
             <div className="imp-lid"><div className="imp-slot"></div></div>
             <div className="imp-body"><span>צ</span></div>
           </div>
-          <div className="auth-sheet-title">Join My Grow Pushka</div>
+          <div className="auth-sheet-title">Join My Pushka</div>
           <div className="auth-sheet-sub">Track your tzedakah and donate to Jewish Greenbush Chabad</div>
           <button className="auth-sheet-btn primary" onClick={() => set({ showAuthSheet: false, screen: 'signup' })}>
             Create Free Account

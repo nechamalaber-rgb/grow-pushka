@@ -2,10 +2,10 @@ export default function PrivacyPolicy() {
   return (
     <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 24px', fontFamily: 'sans-serif', color: '#1a1a2e', lineHeight: 1.7 }}>
       <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>Privacy Policy</h1>
-      <p style={{ color: '#666', fontSize: 14, marginBottom: 32 }}>Jewish Greenbush Chabad — GROW Pushka App<br />Last updated: April 2026</p>
+      <p style={{ color: '#666', fontSize: 14, marginBottom: 32 }}>Jewish Greenbush Chabad — My Pushka App<br />Last updated: April 2026</p>
 
       <h2>1. Introduction</h2>
-      <p>Jewish Greenbush Chabad ("we," "us," or "our") operates the GROW Pushka mobile and web application. This Privacy Policy explains how we collect, use, and protect your personal information when you use our app.</p>
+      <p>Jewish Greenbush Chabad ("we," "us," or "our") operates the My Pushka mobile and web application. This Privacy Policy explains how we collect, use, and protect your personal information when you use our app.</p>
 
       <h2>2. Information We Collect</h2>
       <p><strong>Account Information:</strong> When you create an account, we collect your name and email address.</p>
