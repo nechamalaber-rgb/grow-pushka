@@ -307,6 +307,7 @@ const initialState = {
   reminderTime: '09:00',
   reminderFrequency: 'daily',
   reminderError: '',  // FIX #21
+  pushNeedsResubscribe: false,
 
   // Recurring payments
   recurringEnabled: false,
@@ -649,6 +650,29 @@ export default function App() {
     }
   }, [])
 
+  // Shared by the Reminders toggle and the "notifications aren't working"
+  // fix-it banner — requests permission if needed, subscribes, and reports
+  // a clear result either way instead of failing silently.
+  const enablePush = useCallback(async (userId) => {
+    if (typeof Notification === 'undefined') {
+      return { ok: false, reason: "This device doesn't support push notifications, but we'll still email you." }
+    }
+    if (Notification.permission === 'denied') {
+      return { ok: false, reason: 'Notifications are blocked. Enable them in your device settings.', blocked: true }
+    }
+    let permission = Notification.permission
+    if (permission === 'default') {
+      permission = await Notification.requestPermission().catch(() => 'default')
+    }
+    if (permission !== 'granted') {
+      return { ok: false, reason: "Notification permission wasn't granted — we'll still email you." }
+    }
+    const result = await subscribeToPush(userId)
+    return result?.ok
+      ? { ok: true, reason: 'Reminders on — you\'ll get real notifications on this device.' }
+      : { ok: false, reason: result?.reason || 'Reminders on, but push may not work on this device — email reminders will still work.' }
+  }, [subscribeToPush])
+
   // FIX #6 — loadFromCloud wrapped in useCallback; only depends on stable refs
   const loadFromCloud = useCallback(async (user) => {
     const { data: yzData } = await supabase.from('yahrtzeits').select('*').eq('user_id', user.id)
@@ -740,11 +764,19 @@ export default function App() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-migrate existing users who already had reminders on to real push,
-  // so they don't have to manually re-toggle the setting to get it
+  // so they don't have to manually re-toggle the setting to get it. Also
+  // detects a dead/missing subscription (e.g. after a reinstall or a
+  // revoked permission) so the UI can prompt instead of silently never
+  // delivering notifications again.
   useEffect(() => {
     if (!s.user?.id || !s.reminderEnabled) return
-    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
-    subscribeToPush(s.user.id)
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
+      set({ pushNeedsResubscribe: true })
+      return
+    }
+    subscribeToPush(s.user.id).then(result => {
+      set({ pushNeedsResubscribe: !result?.ok })
+    })
   }, [s.user?.id, s.reminderEnabled, subscribeToPush])
 
   // Schedule browser notification for reminders
@@ -1833,6 +1865,24 @@ export default function App() {
         <div className="glass-card settings-card">
           <div className="settings-section-title"><BellIcon size={17} /> Reminders</div>
           <p className="settings-desc">Get a notification reminding you to drop coins into your pushka — no automatic charges, just a friendly nudge.</p>
+          {s.reminderEnabled && s.pushNeedsResubscribe && !s.reminderError && (
+            <div className="auth-error" style={{ marginBottom: 8 }}>
+              Notifications aren't reaching this device.{' '}
+              <span
+                style={{ textDecoration: 'underline', cursor: 'pointer', fontWeight: 700 }}
+                onClick={async () => {
+                  const result = await enablePush(s.user?.id)
+                  set({
+                    reminderError: result.reason,
+                    reminderEnabled: result.blocked ? false : s.reminderEnabled,
+                    pushNeedsResubscribe: !result.ok,
+                  })
+                }}
+              >
+                Tap to fix
+              </span>
+            </div>
+          )}
           {s.reminderError && (
             <div
               className="auth-error"
@@ -1854,24 +1904,12 @@ export default function App() {
                 set({ reminderEnabled: enabling, reminderError: '' })
                 if (!enabling) return
                 try {
-                  if (typeof Notification === 'undefined') {
-                    set({ reminderError: "This device doesn't support push notifications, but we'll still email you." })
-                    return
-                  }
-                  if (Notification.permission === 'denied') {
-                    set({ reminderEnabled: false, reminderError: 'Notifications are blocked. Enable them in your device settings.' })
-                    return
-                  }
-                  let permission = Notification.permission
-                  if (permission === 'default') {
-                    permission = await Notification.requestPermission().catch(() => 'default')
-                  }
-                  if (permission === 'granted') {
-                    const result = await subscribeToPush(s.user?.id)
-                    set({ reminderError: result?.ok ? 'Reminders on — you\'ll get real notifications on this device.' : (result?.reason || 'Reminders on, but push may not work on this device — email reminders will still work.') })
-                  } else {
-                    set({ reminderError: "Notification permission wasn't granted — we'll still email you." })
-                  }
+                  const result = await enablePush(s.user?.id)
+                  set({
+                    reminderError: result.reason,
+                    reminderEnabled: result.blocked ? false : enabling,
+                    pushNeedsResubscribe: !result.ok,
+                  })
                 } catch (e) {
                   set({ reminderError: e?.message || 'Something went wrong turning on notifications.' })
                 }
