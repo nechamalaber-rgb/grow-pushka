@@ -1517,7 +1517,7 @@ export default function App() {
   if (s.screen === 'success') return (
     <div className="app forest-bg">
       <Menu menuOpen={s.menuOpen} user={s.user} set={set} onSignOut={handleSignOut} />
-      <Nav title={`${s.user?.user_metadata?.full_name?.split(' ')[0] || 'My'}'s Pushka`} shareToast={s.shareToast} set={set} prestige={s.prestige} streak={s.streak} prestigeNext={s.prestigeNext} prestigeAtMax={s.prestigeAtMax} totalPersonal={s.totalPersonal} />
+      <Nav title={s.user?.user_metadata?.full_name?.split(' ')[0] ? `${s.user.user_metadata.full_name.split(' ')[0]}'s Pushka` : 'My Pushka'} shareToast={s.shareToast} set={set} prestige={s.prestige} streak={s.streak} prestigeNext={s.prestigeNext} prestigeAtMax={s.prestigeAtMax} totalPersonal={s.totalPersonal} />
       <div className="success-screen">
         <div className="success-glow"><SparkleIcon size={64} /></div>
         <h1 className="success-title">Thank You!</h1>
@@ -1528,16 +1528,32 @@ export default function App() {
           <div className="stat-big">${s.totalRaised.toLocaleString()} <span className="stat-muted">/ ${s.communityGoal.toLocaleString()}</span></div>
           <div className="progress-bar"><div className="progress-fill" style={{ width: pct(s.totalRaised, s.communityGoal) + '%' }} /></div>
         </div>
-        <div className="streak-card">
-          <div className="streak-circle">{s.streak}</div>
-          <div>
-            <div className="streak-title">DAY STREAK</div>
-            <div className="streak-sub">KEEP THE MITZVAH GOING!</div>
-          </div>
-        </div>
-        <button className="cta-btn" onClick={() => set({ screen: 'home' })}>
-          Back to Pushka
-        </button>
+        {s.user ? (
+          <>
+            <div className="streak-card">
+              <div className="streak-circle">{s.streak}</div>
+              <div>
+                <div className="streak-title">DAY STREAK</div>
+                <div className="streak-sub">KEEP THE MITZVAH GOING!</div>
+              </div>
+            </div>
+            <button className="cta-btn" onClick={() => set({ screen: 'home' })}>
+              Back to Pushka
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="settings-notice" style={{ marginBottom: 16 }}>
+              Want to track your giving, build a streak, and get reminders? Create a free account — takes seconds.
+            </div>
+            <button className="cta-btn" onClick={() => set({ screen: 'signup' })}>
+              Create Free Account
+            </button>
+            <button className="intro-skip" style={{ marginTop: 12, color: 'var(--teal)', textDecoration: 'underline' }} onClick={() => set({ seenIntro: true, screen: 'checkout', donationCause: 'general', customAmount: '', lastDonation: null })}>
+              Donate again
+            </button>
+          </>
+        )}
       </div>
     </div>
   )
@@ -2315,7 +2331,7 @@ export default function App() {
     <div className="app forest-bg">
       {paymentModal}
       <Menu menuOpen={s.menuOpen} user={s.user} set={set} onSignOut={handleSignOut} />
-      <Nav title={`${s.user?.user_metadata?.full_name?.split(' ')[0] || 'My'}'s Pushka`} shareToast={s.shareToast} set={set} prestige={s.prestige} streak={s.streak} prestigeNext={s.prestigeNext} prestigeAtMax={s.prestigeAtMax} totalPersonal={s.totalPersonal} />
+      <Nav title={s.user?.user_metadata?.full_name?.split(' ')[0] ? `${s.user.user_metadata.full_name.split(' ')[0]}'s Pushka` : 'My Pushka'} shareToast={s.shareToast} set={set} prestige={s.prestige} streak={s.streak} prestigeNext={s.prestigeNext} prestigeAtMax={s.prestigeAtMax} totalPersonal={s.totalPersonal} />
 
       {/* ── INTRO OVERLAY (first time only) ── */}
       {!s.seenIntro && (
@@ -2357,6 +2373,13 @@ export default function App() {
             </div>
             <button className="intro-btn" onClick={() => set({ seenIntro: true, screen: 'signup' })}>
               Create Free Account
+            </button>
+            <button
+              className="intro-btn"
+              style={{ background: 'transparent', border: '1.5px solid #fff', color: '#fff' }}
+              onClick={() => set({ seenIntro: true, screen: 'checkout', donationCause: 'general' })}
+            >
+              Just Donate — No Account Needed
             </button>
             <button className="intro-skip" onClick={() => set({ seenIntro: true, screen: 'signin' })}>
               Already have an account? Sign in
