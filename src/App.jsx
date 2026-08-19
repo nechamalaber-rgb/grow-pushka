@@ -308,6 +308,7 @@ const initialState = {
   reminderFrequency: 'daily',
   reminderError: '',  // FIX #21
   pushNeedsResubscribe: false,
+  pushPromptDismissed: false,
 
   // Recurring payments
   recurringEnabled: false,
@@ -2383,6 +2384,42 @@ export default function App() {
             </button>
             <button className="intro-skip" onClick={() => set({ seenIntro: true, screen: 'signin' })}>
               Already have an account? Sign in
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── ENABLE NOTIFICATIONS PROMPT — shown right on open instead of
+          buried in Settings, since that's where people actually see it ── */}
+      {s.seenIntro && s.user && s.reminderEnabled && s.pushNeedsResubscribe && !s.pushPromptDismissed && (
+        <div className="intro-overlay" style={{ zIndex: 250 }}>
+          <div className="intro-box" style={{ paddingTop: 40 }}>
+            <div className="intro-pushka-icon">
+              <div className="intro-mini-pushka">
+                <div className="imp-lid"><div className="imp-slot"></div></div>
+                <div className="imp-body"><BellIcon size={22} /></div>
+              </div>
+            </div>
+            <div className="intro-title" style={{ fontSize: 22 }}>Turn on notifications?</div>
+            <p className="intro-desc">
+              Get a gentle daily reminder to drop a coin — right on your phone, not just email.
+            </p>
+            <button
+              className="intro-btn"
+              onClick={async () => {
+                const result = await enablePush(s.user?.id)
+                set({
+                  reminderError: result.reason,
+                  reminderEnabled: result.blocked ? false : s.reminderEnabled,
+                  pushNeedsResubscribe: !result.ok,
+                  pushPromptDismissed: true,
+                })
+              }}
+            >
+              Enable Notifications
+            </button>
+            <button className="intro-skip" onClick={() => set({ pushPromptDismissed: true })}>
+              Not now
             </button>
           </div>
         </div>
