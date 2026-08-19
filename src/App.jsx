@@ -629,7 +629,7 @@ export default function App() {
       if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
         return { ok: false, reason: 'Notification permission was not granted.' }
       }
-      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
+      const vapidKey = (import.meta.env.VITE_VAPID_PUBLIC_KEY || '').trim()
       if (!vapidKey) return { ok: false, reason: 'Push notifications are not configured yet.' }
 
       const reg = await navigator.serviceWorker.register('/sw.js')
