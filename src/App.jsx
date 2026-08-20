@@ -524,7 +524,16 @@ function FaqItem({ q, a }) {
 }
 
 export default function App() {
-  const [s, setS] = useState(() => ({ ...initialState, ...loadSaved() }))
+  const [s, setS] = useState(() => {
+    const merged = { ...initialState, ...loadSaved() }
+    // Marketing/share links — e.g. buildbitachon.org?donate=1 — should always
+    // land on checkout, not just on someone's first-ever visit like the
+    // intro screen's "Just Donate" button does.
+    if (new URLSearchParams(_INIT_SEARCH).get('donate') === '1') {
+      return { ...merged, seenIntro: true, screen: 'checkout', donationCause: merged.donationCause || 'general' }
+    }
+    return merged
+  })
   const coinTimerRef = useRef(null)
   const audioCtxRef = useRef(null)
   const reminderTimerRef = useRef(null)
