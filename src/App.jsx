@@ -5,6 +5,23 @@ import { supabase } from './supabase'
 // Capture URL immediately at module load — before anything can clear it
 const _INIT_SEARCH = window.location.search
 const _INIT_HASH = window.location.hash
+
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=buildbitachon.org&hl=en_IE'
+
+// Only prompt someone to install the app if they're on a phone browser and
+// don't already have it installed (TWA sets an android-app:// referrer;
+// any installed/homescreen PWA reports display-mode: standalone). iOS has
+// no App Store listing yet, so there's nothing to link to there — once
+// that exists this can return 'ios' too instead of null.
+function getAppBannerPlatform() {
+  if (typeof navigator === 'undefined') return null
+  const alreadyInstalled =
+    document.referrer.startsWith('android-app://') ||
+    window.matchMedia?.('(display-mode: standalone)')?.matches
+  if (alreadyInstalled) return null
+  if (/Android/.test(navigator.userAgent)) return 'android'
+  return null
+}
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import confetti from 'canvas-confetti'
@@ -221,6 +238,7 @@ const PERSIST_KEYS = [
   'reminderEnabled', 'reminderTime', 'reminderFrequency',
   'recurringEnabled', 'recurringAmount', 'recurringFrequency',
   'lastRecurringDate', 'lastStreakDate', 'prestige', 'prestigeNext', 'prestigeAtMax',
+  'dismissedAppBanner',
 ]
 
 const loadSaved = () => {
@@ -309,6 +327,7 @@ const initialState = {
   reminderError: '',  // FIX #21
   pushNeedsResubscribe: false,
   pushPromptDismissed: false,
+  dismissedAppBanner: false,
 
   // Recurring payments
   recurringEnabled: false,
@@ -2435,6 +2454,20 @@ export default function App() {
       )}
 
       <div className="page-content">
+
+        {!s.dismissedAppBanner && getAppBannerPlatform() === 'android' && (
+          <div className="recurring-banner">
+            <div className="recurring-banner-text">
+              <CoinIcon size={14} /> Get the app for a faster pushka and real notifications.
+            </div>
+            <div className="recurring-banner-btns">
+              <a className="recurring-yes" style={{ textDecoration: 'none', textAlign: 'center' }} href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer">
+                Get it on Google Play
+              </a>
+              <button className="recurring-skip" onClick={() => set({ dismissedAppBanner: true })}>Not now</button>
+            </div>
+          </div>
+        )}
 
         {s.recurringDue && s.recurringEnabled && (
           <div className="recurring-banner">
